@@ -1,0 +1,28 @@
+\section{Training}
+\label{sec:training}
+
+We fit $\vtheta$ by minimizing the empirical risk
+\begin{equation}
+  \label{eq:risk}
+  \hat{\vtheta} = \argmin_{\vtheta}\; \frac{1}{n} \sum_{i=1}^{n}
+    \ell\!\left(\mathrm{MLP}_{\vtheta}(\vx_i),\, y_i\right),
+\end{equation}
+where $\ell$ is the softmax cross-entropy over the $n$ training pairs.
+\Cref{eq:risk} has no closed form, so we descend it with minibatch stochastic
+gradient descent, taking each gradient by backpropagation~\citep{rumelhart1986}.
+\Cref{alg:train} is one full run.
+
+\begin{algorithm}[t]
+  \caption{Minibatch SGD training of an MLP.}
+  \label{alg:train}
+  \input{assets/train-mlp/asset}
+\end{algorithm}
+
+Two choices matter more than the optimizer itself.
+We initialize weights with the scheme of \citet{he2015}, which keeps activations
+from collapsing through a deep rectifier stack; the older proposal of
+\citet{glorot2010} works nearly as well at this depth.
+Adam~\citep{kingma2015} and plain SGD reached the same accuracy on our task, so we
+report SGD.
+Every run uses a learning rate of \num{e-3}, a batch size of \num{128}, and
+\num{50} epochs.

@@ -1,0 +1,159 @@
+% talk.tex -- the slide companion to the paper, on the filao Beamer theme.
+%
+% Same research, same figures. Every plot and table here is the SAME
+% assets/<name>/asset.tex the article builds: they read results/*.csv and size
+% to \floatcol/\floatfull, so they drop into a frame at slide width with no
+% duplication. Notation comes from the shared macros.tex.
+%
+% The theme lives in styles/filao-beamer/, so add that folder to the search path
+% (this tectonic does NOT read TEXINPUTS). Build from paper/:
+%
+%   tectonic -Z search-path=styles/filao-beamer talk.tex --outdir _build
+%
+% Skin: \usetheme{filao} is dark; \usetheme[light]{filao} is the light editorial
+% skin; \usetheme[fira]{filao} uses Fira Sans if it is installed.
+\documentclass[aspectratio=169]{beamer}
+
+\usetheme[light]{filao}
+\input{macros}
+
+\title{ {{ paper_title }} }
+\subtitle{How wide is wide enough?}
+\author{ {{ author_name }} }
+\institute{INRIA Paris \& ENS Ulm}
+\date{\today}
+
+% The short title feeds the footline.
+\title[On the Width of MLPs]{ {{ paper_title }} }
+
+\begin{document}
+
+\begin{frame}[plain, noframenumbering]
+  \titlepage
+\end{frame}
+
+\begin{frame}{Outline}
+  \tableofcontents
+\end{frame}
+
+% ==========================================================================
+\section{The question}
+% ==========================================================================
+
+\begin{frame}{Where deep learning starts}
+  \begin{itemize}
+    \item Affine maps with a nonlinearity between, trained by backpropagation.
+    \item The first model most people reach for, and the block inside bigger nets.
+  \end{itemize}
+  \begin{theorem}[universal approximation]
+    One hidden layer, made wide enough, approximates any continuous function on
+    a compact set.
+  \end{theorem}
+  \begin{block}{The gap we poke at}
+    The theorems say \emph{a} width exists -- not \emph{how} wide, nor whether
+    the width that fits is the width that generalizes.
+  \end{block}
+\end{frame}
+
+% ==========================================================================
+\section{The model}
+% ==========================================================================
+
+\subsection{Architecture}
+
+\begin{frame}{A multilayer perceptron}
+  \splitframe{%
+    \centering
+    \resizebox{\linewidth}{!}{\input{assets/mlp-architecture/asset}}%
+  }{%
+    \begin{itemize}
+      \item $L$ affine layers $(\mW_\ell, \vb_\ell)$, each followed by a
+        pointwise nonlinearity $\phi$.
+      \item Width $h$ = hidden units per layer -- the knob we sweep.
+      \item Fully connected, trained end to end.
+    \end{itemize}%
+  }
+\end{frame}
+
+\subsection{The nonlinearity}
+
+\begin{frame}{The nonlinearity is a choice, not a given}
+  \centering
+  \input{assets/activations/asset}
+  \slidenote{Six common activations $\phi$. We use ReLU.}
+\end{frame}
+
+% ==========================================================================
+\section{Training}
+% ==========================================================================
+
+\subsection{The algorithm}
+
+\begin{frame}{Minibatch SGD by backpropagation}
+  \begin{block}{Training the MLP}
+    \input{assets/train-mlp/asset}
+  \end{block}
+\end{frame}
+
+\subsection{Convergence}
+
+\begin{frame}{The run converges}
+  \splitframe{%
+    \input{assets/loss-curve/asset}%
+  }{%
+    \input{assets/acc-curve/asset}%
+  }
+  \slidenote{Loss and accuracy over epochs; the shaded band is $\pm 1$ std over
+  seeds. Validation blue solid, train vermillion dashed.}
+\end{frame}
+
+% ==========================================================================
+\section{How width shapes generalization}
+% ==========================================================================
+
+\subsection{The width sweep}
+
+\begin{frame}{Sweeping the hidden width}
+  \splitframe{%
+    \resizebox{\linewidth}{!}{\input{assets/width-sweep/asset}}%
+  }{%
+    \begin{itemize}
+      \item Test accuracy against hidden width $h$, on a $\log_2$ axis.
+      \item Climbs steeply, then \alert{flattens}.
+      \item Past a few hundred units, extra capacity buys almost nothing.
+    \end{itemize}%
+  }
+\end{frame}
+
+\subsection{Depth and width}
+
+\begin{frame}{Depth and width together}
+  \centering
+  \input{assets/results-table/asset}
+  \slidenote{Test error over seeds across depth--width configurations.}
+\end{frame}
+
+% ==========================================================================
+\standout{Capacity plateaus.\\ The useful width is far smaller\\ than the theorems allow.}
+% ==========================================================================
+
+\section{Takeaways}
+
+\begin{frame}{What to remember}
+  \begin{itemize}
+    \item Accuracy rises quickly with width, then saturates.
+    \item The approximation theorems are existence results -- they do not set
+      the width you should train.
+    \item The useful capacity is small; measure it, do not assume it.
+  \end{itemize}
+  \vfill
+  \begin{block}{Read more}
+    Cybenko (1989); Hornik (1989) -- universal approximation.\\
+    Rumelhart, Hinton \& Williams (1986) -- backpropagation.\\
+    Goodfellow, Bengio \& Courville (2016) -- \emph{Deep Learning}.
+  \end{block}
+\end{frame}
+
+\standout{Thank you.}
+
+\end{document}

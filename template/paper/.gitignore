@@ -1,0 +1,33 @@
+# Build output — the compiled PDF and every derived file land here.
+_build/
+
+# LaTeX aux files, if a build is ever run without --outdir.
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+
+# Cached, rebuildable asset renders. The asset.tex fragments are committed.
+assets/**/*.pdf
+
+# Heavy talk media: video files and exported frame sequences for the beamer
+# deck. Kept next to their figure under assets/<name>/, but too large to commit;
+# the asset.tex that references them stays.
+assets/**/*.mp4
+assets/**/frames/
+
+# Official venue style files: the venue's copyright, fetched not committed (see
+# each styles/<venue>/README.md). The wrapper and READMEs stay; styles/filao is
+# ours to commit.
+styles/neurips/*.sty
+styles/neurips/*.tex
+styles/neurips/*.pdf
+styles/iclr/*.sty
+styles/iclr/*.cls
+styles/icml/*.sty
+styles/icml/*.cls

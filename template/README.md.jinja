@@ -1,0 +1,82 @@
+# {{ project_slug }}
+
+{{ project_description }}
+
+This is research code. The priorities, in order, are clarity, then
+correctness-by-construction, then reproducibility, then brevity.
+
+## Layout
+
+```
+{{ project_slug }}/
+    .guidelines-ai/      # the conventions — read these before writing code
+    .github/             # CI workflow + pull-request template
+    .global-hydra/       # shared Hydra config groups: base, optimizer, scheduler
+    .vscode/             # editor settings (ruff + ty wiring)
+    experiments/         # one dir per experiment: goal.md + a Hydra config.yaml
+    packages/            # uv workspace members; the package code lives here
+        core/            # the scaffold: contracts, training loop, metrics,
+                         #   callbacks, loggers
+        dummy-regression/# a synthetic regression task wiring core end to end
+    paper/               # the LaTeX article + slides (see paper/README.md)
+    ressources/          # catalogued papers + docling conversion (see its README)
+    scripts/train.py     # Hydra training launcher, wrapped by `just run`
+    justfile             # task runner: just run / check / new / list / paper
+    CLAUDE.md            # project overview + index of the guidelines
+    prek.toml            # pre-commit hooks (ruff, ty, file hygiene, uv lock)
+    ruff.toml            # lint + format rules
+    ty.toml              # type-checker config
+    pytest.ini           # test config — markers, doctests, importlib mode
+    pyproject.toml       # workspace root: dev deps, Python pin
+    uv.lock              # resolved lockfile — uv owns it
+    .python-version      # interpreter pin (>=3.14)
+```
+
+The repo is a uv workspace. The root isn't a package; each subproject lives
+under `packages/` with its own `src/` layout and `pyproject.toml`. `core` is the
+training scaffold, and `dummy-regression` wires it end to end on a synthetic
+task and is the one to copy when starting a new package.
+
+## Getting started
+
+Everything runs through [uv](https://docs.astral.sh/uv/) — it owns the
+environment and the lockfile, so there's no venv to activate.
+
+```bash
+uv run --all-packages pytest              # run the tests and src/ doctests
+uv run prek run --all-files               # lint, format, type-check, hygiene checks
+just run dummy_regression                 # train the worked-example experiment
+```
+
+`--all-packages` makes every workspace member importable; without it uv only
+syncs the root. Skip it for commands that don't import package code.
+
+Install the git hooks once so the checks run on every commit:
+
+```bash
+uv run prek install
+```
+
+## Running an experiment
+
+An experiment lives under `experiments/<name>/`: a `goal.md` stating the
+question and a Hydra `config.yaml` wiring the data, model, loss, optimizer, and
+eval schedule. The `justfile` drives them:
+
+```bash
+just list                     # list experiments
+just new my_experiment        # scaffold experiments/my_experiment from the template
+just run dummy_regression     # train; append Hydra overrides, e.g. seed=1
+just check                    # format, lint, type-check, then the test suite
+```
+
+`just run` calls `scripts/train.py`, which instantiates the config and hands the
+pieces to `core.fit`. Metrics stream to the terminal and to `.logs/` through the
+CSV logger.
+
+## Conventions
+
+The rules for working here live in `.guidelines-ai/` and are loaded by
+`CLAUDE.md`. They cover the uv workflow, Python style (typing, docstrings, pure
+cores), the PyTorch/einops/jaxtyping modeling conventions, and the commit
+format. Read them before adding code.

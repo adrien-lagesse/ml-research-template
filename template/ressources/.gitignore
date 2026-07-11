@@ -1,0 +1,3 @@
+# Every <slug>/ folder is rebuilt from ressources.json (see README.md).
+# Only README.md, convert_pdf.py, ressources.json, and this file are tracked.
+*/

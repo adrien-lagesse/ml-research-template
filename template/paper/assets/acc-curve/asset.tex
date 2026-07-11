@@ -1,0 +1,30 @@
+% Accuracy-curve asset: train and validation accuracy over epochs, from the same
+% training run as the loss curve. Same colour/dash mapping as the loss curve
+% (validation blue solid, train vermillion dashed), so a series means one thing
+% across every figure. The validation curve carries a shaded +-1 std band over
+% seeds, built from val_acc and val_acc_std like the loss curve. Sized to
+% \linewidth for a subfigure.
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\linewidth, height=5cm,
+    xlabel={Epoch}, ylabel={Accuracy},
+    legend pos=south east, legend cell align=left,
+    grid=major, ymin=0.35, ymax=1.0,
+  ]
+    % validation band: upper and lower edges are mean +- std
+    \addplot [name path=vhi, draw=none, forget plot]
+      table [col sep=comma, x=epoch, y expr=\thisrow{val_acc}+\thisrow{val_acc_std}]
+      {results/training/data.csv};
+    \addplot [name path=vlo, draw=none, forget plot]
+      table [col sep=comma, x=epoch, y expr=\thisrow{val_acc}-\thisrow{val_acc_std}]
+      {results/training/data.csv};
+    \addplot [oiBlue!15, forget plot] fill between [of=vhi and vlo];
+
+    \addplot [oiBlue, solid, mark=none]
+      table [col sep=comma, x=epoch, y=val_acc] {results/training/data.csv};
+    \addlegendentry{validation}
+    \addplot [oiVermillion, densely dashed, mark=none]
+      table [col sep=comma, x=epoch, y=train_acc] {results/training/data.csv};
+    \addlegendentry{train}
+  \end{axis}
+\end{tikzpicture}

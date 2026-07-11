@@ -1,0 +1,10 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+The MLP is a small model with a clean story.
+It can approximate any continuous function (\cref{thm:ua}), it trains by
+backpropagation (\cref{alg:train}), and on this task its accuracy saturates once
+the hidden layers reach a few hundred units (\cref{fig:width}).
+Width buys generalization cheaply at first and then stops paying.
+The obvious next step is to check whether that plateau moves with harder data or
+with normalization between layers.

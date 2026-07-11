@@ -1,0 +1,51 @@
+# @package _global_
+defaults:
+  - /base
+  - /optimizer: adamw
+  - /scheduler: cosine
+  - _self_
+
+experiment_name: __NAME__
+run_name: baseline
+
+seed: 0
+device: cpu
+total_steps: 10000 # optimizer steps; the run length and the cosine T_max
+batch_size: 64
+log_every_steps: 50 # train-loss logging cadence, in global steps
+
+evals:
+  validation:
+    steps: 200
+  test:
+    at_end: true
+
+# ??? marks the fields every experiment must fill in.
+data:
+  _target_: ???
+
+model:
+  _target_: ???
+
+loss:
+  _target_: ???
+
+metrics:
+  _target_: core.metrics.MetricCollection
+  metrics: []
+
+loggers:
+  - _target_: core.logger.TerminalLogger
+  - _target_: core.logger.CSVLogger
+    experiment_name: ${experiment_name}
+    run_name: ${run_name}
+    checkpointing: true
+
+callbacks:
+  - _target_: core.callbacks.ModelSummary # parameter counts, written at train start
+  - _target_: core.callbacks.ConfigSummary # resolved config, written at train start
+  - _target_: core.callbacks.LRMonitor
+    every_steps: ${log_every_steps}
+  - _target_: core.callbacks.Checkpoint # latest state, for resuming a crashed run
+    every_steps: 1000
+    name: last

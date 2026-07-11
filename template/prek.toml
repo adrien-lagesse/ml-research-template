@@ -1,0 +1,74 @@
+minimum_prek_version = "0.4.5"
+
+# Install both the pre-commit and commit-msg git hooks on `prek install`.
+default_install_hook_types = ["pre-commit", "commit-msg"]
+
+# Generic file hygiene — prek runs these in its own managed toolchain.
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+hooks = [
+  { id = "trailing-whitespace" },
+  { id = "end-of-file-fixer" },
+  { id = "mixed-line-ending" },
+  { id = "check-added-large-files" },
+  { id = "check-merge-conflict" },
+  { id = "check-case-conflict" },
+  { id = "check-toml" },
+  { id = "check-yaml" },
+  { id = "detect-private-key" },
+  { id = "debug-statements" },
+]
+
+# Strip notebook outputs so committed .ipynb files stay clean and reproducible.
+[[repos]]
+repo = "https://github.com/kynan/nbstripout"
+rev = "0.9.1"
+hooks = [{ id = "nbstripout" }]
+
+# Schema-validate pyproject.toml (root and every workspace member).
+[[repos]]
+repo = "https://github.com/abravalheri/validate-pyproject"
+rev = "v0.25"
+hooks = [{ id = "validate-pyproject" }]
+
+# Enforce the Angular commit-message convention at the commit-msg stage.
+[[repos]]
+repo = "https://github.com/compilerla/conventional-pre-commit"
+rev = "v4.4.0"
+hooks = [{ id = "conventional-pre-commit", stages = ["commit-msg"] }]
+
+# ruff + ty + uv lockfile check — run through uv so versions match uv.lock.
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "ruff-check"
+name = "ruff check"
+language = "system"
+entry = "uv run ruff check --fix --force-exclude"
+types_or = ["python", "pyi", "jupyter"]
+
+[[repos.hooks]]
+id = "ruff-format"
+name = "ruff format"
+language = "system"
+entry = "uv run ruff format --force-exclude"
+types_or = ["python", "pyi", "jupyter"]
+
+[[repos.hooks]]
+id = "ty"
+name = "ty check"
+language = "system"
+# --all-packages so every workspace member is importable during the check.
+entry = "uv run --all-packages ty check"
+types_or = ["python", "pyi"]
+pass_filenames = false
+
+[[repos.hooks]]
+id = "uv-lock-check"
+name = "uv lock --check"
+language = "system"
+entry = "uv lock --check"
+files = "(^|/)pyproject\\.toml$|^uv\\.lock$"
+pass_filenames = false

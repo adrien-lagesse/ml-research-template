@@ -1,0 +1,9 @@
+[
+  {
+    "slug": "attention-is-all-you-need",
+    "title": "Attention Is All You Need",
+    "url": "https://arxiv.org/pdf/1706.03762",
+    "date": "2017-06-12",
+    "repo": "https://github.com/tensorflow/tensor2tensor"
+  }
+]

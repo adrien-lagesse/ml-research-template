@@ -1,0 +1,22 @@
+% Activation asset: six nonlinearities, with NO explicit styling, so the house
+% `paper` cycle assigns each curve its colour + line style + marker in order.
+% This figure exists to show the cycle; it is full width (figure* + \floatfull).
+% mark repeat thins the markers so a few show per curve instead of one per sample.
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\floatfull, height=6cm,
+    xlabel={$x$}, ylabel={$\phi(x)$},
+    domain=-3:3, samples=101,
+    ymin=-1.6, ymax=3,
+    legend pos=north west, legend cell align=left, legend columns=3,
+    grid=major,
+    every axis plot/.append style={mark repeat=20, mark phase=10},
+  ]
+    \addplot {max(0,x)};                       \addlegendentry{ReLU}
+    \addplot {max(0.1*x, x)};                  \addlegendentry{Leaky ReLU}
+    \addplot {(x>=0)*x + (x<0)*(exp(x)-1)};    \addlegendentry{ELU}
+    \addplot {tanh(x)};                        \addlegendentry{$\tanh$}
+    \addplot {1/(1+exp(-x))};                  \addlegendentry{sigmoid}
+    \addplot {ln(1+exp(x))};                   \addlegendentry{softplus}
+  \end{axis}
+\end{tikzpicture}

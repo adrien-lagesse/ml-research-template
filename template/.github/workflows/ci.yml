@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # Standalone: run the hooks through uv, not the prek marketplace action.
+      # This runs ruff, ty, the file-hygiene hooks, and uv lock --check.
+      - name: Run prek hooks
+        run: uv run prek run --all-files --show-diff-on-failure
+
+      - name: Run tests
+        run: uv run --all-packages pytest
+
+  commit-messages:
+    # Check every commit in the PR against the Angular convention. The local
+    # commit-msg hook enforces this too, but a contributor can skip it with
+    # --no-verify; this is the gate that can't be bypassed. Only runs on PRs:
+    # the base/head SHAs come from the pull_request event.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # Run the same conventional-pre-commit hook the local commit-msg stage
+      # uses, once per commit. Skip merge commits, and check all commits before
+      # failing so the log lists every offender, not just the first.
+      - name: Check commit messages
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          status=0
+          for sha in $(git rev-list --no-merges "$BASE_SHA..$HEAD_SHA"); do
+            git log -1 --format=%B "$sha" > "$RUNNER_TEMP/msg"
+            echo "::group::$(git log -1 --format='%h %s' "$sha")"
+            uv run prek run --stage commit-msg \
+              --commit-msg-filename "$RUNNER_TEMP/msg" conventional-pre-commit || status=1
+            echo "::endgroup::"
+          done
+          exit $status

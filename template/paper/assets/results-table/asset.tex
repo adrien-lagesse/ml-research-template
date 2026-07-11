@@ -1,0 +1,13 @@
+% Results-table asset: depth/width configurations and their test error over
+% seeds, typeset from results/benchmark/data.csv. csvsimple reads the rows;
+% \num turns "error +- error_std" into a "mean +- std" cell (siunitx has
+% separate-uncertainty set in the preamble). Positional columns \csvcol<n> avoid
+% trouble with the underscore in error_std.
+\begin{tabular}{l c c c c}
+  \toprule
+  Config & Depth & Width & Params & {Test err.\ (\%)} \\
+  \midrule
+  \csvreader[separator=comma, late after line=\\]{results/benchmark/data.csv}{}{%
+    \csvcoli & \csvcolii & \csvcoliii & \num{\csvcoliv} & \num{\csvcolv +- \csvcolvi}}%
+  \bottomrule
+\end{tabular}

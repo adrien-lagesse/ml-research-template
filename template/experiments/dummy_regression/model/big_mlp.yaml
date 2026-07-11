@@ -1,0 +1,4 @@
+_target_: dummy_regression.MLP
+in_features: ${data.n_features}
+hidden_features: 256
+out_features: ${data.n_targets}

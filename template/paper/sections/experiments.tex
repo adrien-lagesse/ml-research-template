@@ -1,0 +1,64 @@
+\section{Experiments}
+\label{sec:experiments}
+
+\paragraph{Setup.}
+We train on a synthetic \num{10}-class problem: \num{20000} points in
+$\R^{784}$ drawn from class-conditional Gaussians, split \num{80}/\num{20} into
+training and validation.
+The reference network has two hidden layers of width \num{256}.
+Every figure and table below is generated from one set of runs under
+\texttt{results/}, so they cannot disagree.
+
+\paragraph{Training dynamics.}
+\Cref{fig:training} tracks the reference network over training.
+Loss and accuracy both flatten well before the last epoch, and the small gap
+between training and validation (\cref{fig:acc}) says the network is not
+overfitting this task.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.48\linewidth}
+    \centering
+    \input{assets/loss-curve/asset}
+    \caption{Loss.}
+    \label{fig:loss}
+  \end{subfigure}\hfill
+  \begin{subfigure}{0.48\linewidth}
+    \centering
+    \input{assets/acc-curve/asset}
+    \caption{Accuracy.}
+    \label{fig:acc}
+  \end{subfigure}
+  \caption{Training dynamics of the reference network, two views of one run. The
+    shaded band on each validation curve is $\pm 1$ standard deviation over five
+    seeds.}
+  \label{fig:training}
+\end{figure}
+
+\paragraph{Effect of width.}
+\Cref{fig:width} sweeps the hidden width from \num{16} to \num{1024}, holding
+everything else fixed and averaging over five seeds.
+Accuracy climbs steeply to about \num{128} units, then plateaus; the last
+doubling, from \num{512} to \num{1024}, adds parameters but essentially no
+accuracy.
+
+\begin{figure}[t]
+  \centering
+  \input{assets/width-sweep/asset}
+  \caption{Test accuracy against hidden width, with standard deviation over five
+    seeds. The curve flattens past a few hundred units.}
+  \label{fig:width}
+\end{figure}
+
+\paragraph{Depth and width together.}
+\Cref{tab:benchmark} compares four depth--width configurations.
+The deepest is the most accurate, but only by \num{0.4} points over configuration
+C, which has a third of the parameters --- the same diminishing return that
+\cref{fig:width} shows along the width axis.
+
+\begin{table}[t]
+  \centering
+  \caption{Depth--width configurations, parameter counts, and test error.}
+  \label{tab:benchmark}
+  \input{assets/results-table/asset}
+\end{table}

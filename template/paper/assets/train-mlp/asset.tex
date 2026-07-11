@@ -1,0 +1,16 @@
+% Algorithm asset: minibatch SGD training of an MLP by backpropagation.
+% Raw fragment — \input inside an algorithm float.
+\begin{algorithmic}[1]
+  \Require training set $\gD$; epochs $T$; batch size $B$; learning rate $\eta$
+  \Ensure parameters $\vtheta = \{(\mW_\ell, \vb_\ell)\}_{\ell=1}^{L}$
+  \State initialize each $\mW_\ell$ with He initialization, $\vb_\ell \gets \vzero$
+  \For{$t = 1, \dots, T$}
+    \ForAll{minibatches $\gB \subset \gD$ of size $B$}
+      \State $\vg \gets \dfrac{1}{B} \sum_{(\vx, y) \in \gB}
+        \nabla_{\vtheta}\, \ell\!\left(\mathrm{MLP}_{\vtheta}(\vx),\, y\right)$
+        \Comment{forward pass, then backpropagation}
+      \State $\vtheta \gets \vtheta - \eta\, \vg$ \Comment{SGD step}
+    \EndFor
+  \EndFor
+  \State \Return $\vtheta$
+\end{algorithmic}

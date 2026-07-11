@@ -1,0 +1,63 @@
+# @package _global_
+defaults:
+  - /base
+  - /optimizer: adamw
+  - /scheduler: cosine
+  - /model: small_mlp
+  - _self_
+
+experiment_name: dummy_regression
+run_name: baseline
+
+seed: 0
+device: cpu
+total_steps: 12800
+batch_size: 64
+log_every_steps: 50 # train-loss logging cadence, in global steps
+
+evals:
+  validation:
+    steps: 200
+  test:
+    at_end: true
+
+data:
+  _target_: dummy_regression.SyntheticRegression
+  n_features: 8
+  n_targets: 1
+  n_train: 1024
+  n_val: 256
+  n_test: 256
+  noise_std: 0.1
+  dataset_seed: ${seed}
+  dataloader_seed: ${seed}
+  batch_size: ${batch_size}
+
+loggers:
+  - _target_: core.logger.TerminalLogger
+  - _target_: core.logger.CSVLogger
+    experiment_name: ${experiment_name}
+    run_name: ${run_name}
+    checkpointing: true
+
+callbacks:
+  - _target_: core.callbacks.ModelSummary # parameter counts, written at train start
+  - _target_: core.callbacks.ConfigSummary # resolved config, written at train start
+  - _target_: core.callbacks.LRMonitor
+    every_steps: ${log_every_steps}
+  - _target_: core.callbacks.Checkpoint # best model, saved when val loss improves
+    monitor: validation/loss
+    mode: min
+    name: best
+  - _target_: core.callbacks.Checkpoint # latest state, for resuming a crashed run
+    every_steps: 1600
+    name: last
+
+loss:
+  _target_: dummy_regression.MSELoss
+
+metrics:
+  _target_: core.metrics.MetricCollection
+  metrics:
+    - _target_: core.metrics.MeanAbsoluteError
+    - _target_: core.metrics.ExplainedVariance

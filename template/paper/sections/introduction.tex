@@ -1,0 +1,23 @@
+\section{Introduction}
+\label{sec:introduction}
+
+The multilayer perceptron (MLP) is where deep learning starts.
+Stack a few affine maps, put a nonlinearity between them, and train the whole
+thing by backpropagation~\citep{rumelhart1986}: that recipe is still the first
+model most people reach for, and it underlies the feedforward blocks inside
+larger architectures~\citep{goodfellow2016}.
+
+Theory has long said the MLP is expressive.
+A single hidden layer, made wide enough, approximates any continuous function on
+a compact set~\citep{cybenko1989, hornik1989}.
+What the theory does not say is \emph{how} wide, or whether the width that fits
+the training data is the width that generalizes.
+That gap between existence and practice is the question we poke at here.
+
+This example paper sets up an MLP (\cref{sec:model}, sketched in
+\cref{fig:arch}), trains it with the procedure in \cref{alg:train}
+(\cref{sec:training}), and studies the effect of hidden width in
+\cref{sec:experiments}.
+The finding is unsurprising but worth seeing plotted: accuracy climbs steeply
+with width and then flattens, so the useful capacity is far smaller than the
+approximation theorems would let you use.

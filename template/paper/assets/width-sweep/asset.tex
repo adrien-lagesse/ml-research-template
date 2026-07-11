@@ -1,0 +1,24 @@
+% Width-sweep asset: test accuracy against hidden width on a log-2 x axis, shown
+% as a shaded +-1 std band (over seeds) with the trend line and a marker at each
+% measured width. Single series, so the house blue is enough.
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\floatcol, height=5.5cm,
+    xlabel={Hidden width $h$}, ylabel={Test accuracy},
+    xmode=log, log basis x=2,
+    xtick={16,32,64,128,256,512,1024},
+    xticklabels={16,32,64,128,256,512,1024},
+    grid=major, ymin=0.78, ymax=0.93,
+  ]
+    \addplot [name path=hi, draw=none, forget plot]
+      table [col sep=comma, x=width, y expr=\thisrow{test_acc}+\thisrow{test_acc_std}]
+      {results/width-sweep/data.csv};
+    \addplot [name path=lo, draw=none, forget plot]
+      table [col sep=comma, x=width, y expr=\thisrow{test_acc}-\thisrow{test_acc_std}]
+      {results/width-sweep/data.csv};
+    \addplot [oiBlue!15, forget plot] fill between [of=hi and lo];
+
+    \addplot [oiBlue, mark=*, mark options={fill=oiBlue}]
+      table [col sep=comma, x=width, y=test_acc] {results/width-sweep/data.csv};
+  \end{axis}
+\end{tikzpicture}

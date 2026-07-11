@@ -1,0 +1,73 @@
+# Ruff config for {{ project_slug }}. Turns the conventions in .guidelines-ai/python.md
+# and ml-pytorch.md into enforced rules: full typing, Google docstrings, modern
+# syntax, pathlib, clean imports — with the carve-outs jaxtyping needs.
+
+target-version = "py314"
+line-length = 88
+
+# Where first-party code lives, so isort classifies workspace imports correctly.
+src = ["packages/*/src"]
+
+[lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes — unused imports/vars (also enforces __all__ in facades)
+  "I",    # isort — import ordering
+  "N",    # pep8-naming
+  "D",    # pydocstyle — docstrings required, Google style
+  "UP",   # pyupgrade — list[int], X | None, f-strings
+  "ANN",  # flake8-annotations — every function fully typed
+  "B",    # flake8-bugbear — e.g. mutable default arguments
+  "C4",   # flake8-comprehensions
+  "A",    # flake8-builtins — don't shadow id/type/input/dict/...
+  "SIM",  # flake8-simplify
+  "PTH",  # flake8-use-pathlib — pathlib over os.path
+  "RET",  # flake8-return — consistent returns
+  "ARG",  # flake8-unused-arguments
+  "PIE",  # flake8-pie — misc lints
+  "SLF",  # flake8-self — flag access to others' _private members
+  "TID",  # flake8-tidy-imports — ban relative imports
+  "ICN",  # flake8-import-conventions — import numpy as np, etc.
+  "PT",   # flake8-pytest-style (kicks in once tests exist)
+  "NPY",  # numpy-specific rules
+  "G",    # flake8-logging-format — keep %-style logging, not f-strings
+  "LOG",  # flake8-logging
+  "PERF", # perflint
+  "FURB", # refurb — modernizing rewrites
+  "ERA",  # eradicate — no commented-out code
+  "PL",   # pylint (PLC/PLE/PLR/PLW)
+  "RUF",  # ruff-specific rules
+]
+ignore = [
+  "ANN401",   # typing.Any is allowed where the guidelines permit it
+  "F722",     # jaxtyping shape strings, e.g. Float[Tensor, "batch dim"]
+  "F821",     # jaxtyping single-axis shapes; ty catches real undefined names
+  "UP037",    # don't strip quotes off jaxtyping shapes like Float[Tensor, "dim"]
+  "PLR0913",  # many arguments is normal for model/training functions
+  "PLR2004",  # magic-value comparisons are everywhere in research code
+  "A005",     # a subpackage named io/ (per python.md) shadows stdlib, that's fine
+]
+
+[lint.pydocstyle]
+convention = "google"
+
+[lint.pep8-naming]
+# Math/linear-algebra conventions: capital single letters are meaningful here.
+extend-ignore-names = ["X", "X_*", "K", "N", "G", "W", "A", "P", "Q"]
+
+[lint.isort]
+combine-as-imports = false         # `import x as y` keeps its own line
+force-single-line = true           # one imported name per line, never grouped
+force-sort-within-sections = true  # sort `import x` and `from x` together
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "all"     # absolute imports only
+
+[lint.per-file-ignores]
+# Tests don't need docstrings or full annotations.
+"**/tests/**" = ["D", "ANN"]
+"**/test_*.py" = ["D", "ANN"]
+
+[format]
+docstring-code-format = true     # also format the code in docstring examples

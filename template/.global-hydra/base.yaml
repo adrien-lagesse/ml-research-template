@@ -1,0 +1,16 @@
+# @package _global_
+# Stop hydra from writing to disk: no run/sweep output dirs, no .hydra config
+# dump, no <job>.log file. Job logs go to stdout only; the CSVLogger under
+# .logs/ is the run's record.
+defaults:
+  - override /hydra/job_logging: stdout
+
+hydra:
+  output_subdir: null
+  run:
+    dir: .
+  sweep:
+    # BasicSweeper saves multirun.yaml into sweep.dir unconditionally, so the
+    # only way to keep it out of the repo is to point the dir at /tmp.
+    dir: /tmp/hydra-multirun
+    subdir: .

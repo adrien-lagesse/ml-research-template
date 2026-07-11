@@ -1,0 +1,83 @@
+# {{ project_slug }}
+
+{{ project_description }}
+
+This is research code. The priorities, in order, are clarity, then
+correctness-by-construction, then reproducibility, then brevity.
+
+## Folder structure
+
+```
+{{ project_slug }}/
+    .github/           # CI workflow and the pull-request template
+    .global-hydra/     # shared Hydra config groups: base, optimizer, scheduler
+    .guidelines-ai/    # the conventions below — read these first
+    .vscode/           # editor settings (ruff + ty wiring)
+    experiments/       # one dir per experiment: goal.md + a Hydra config.yaml
+        _template/     # scaffold that `just new <name>` copies
+    packages/          # uv workspace members; the actual package code lives here
+        core/          # the scaffold: data/model/loss contracts, training loop,
+                       #   metrics, callbacks, loggers
+        dummy-regression/  # a synthetic regression task wiring core end to end
+    paper/             # the LaTeX article and slides (see paper/README.md)
+    ressources/        # catalogued papers + docling conversion (see its README)
+    scripts/           # entry points; train.py is the Hydra training launcher
+    CLAUDE.md          # this file — project overview and guideline index
+    README.md          # human-facing overview and getting-started
+    justfile           # task runner: just run / check / new / list / paper
+    pyproject.toml     # workspace root: deps, dev tools, Python pin
+    uv.lock            # the resolved lockfile — uv owns it
+    .python-version    # interpreter pin (>=3.14)
+    prek.toml          # pre-commit hooks (ruff, ty, file hygiene, uv lock)
+    ruff.toml          # lint + format rules
+    ty.toml            # type-checker config
+    pytest.ini         # test config — markers, doctests, importlib mode
+    .gitignore         # ignored paths
+```
+
+The repo is a uv workspace (`[tool.uv.workspace]`, members `packages/*`). The
+root is not itself a package; each subproject lives under `packages/`. `core`
+holds the training scaffold, and `dummy-regression` is a worked example that
+wires it end to end and is the one to copy when starting a new package.
+
+## Running experiments
+
+An experiment is a directory under `experiments/` with a `goal.md` and a Hydra
+`config.yaml` that names the data, model, loss, optimizer, scheduler, eval
+schedule, loggers, and callbacks. The config groups the experiments share live
+in `.global-hydra/`. The `justfile` drives the common tasks:
+
+```bash
+just list                       # list experiments (skips the _template)
+just new <name>                 # scaffold experiments/<name> from _template
+just run dummy_regression       # train; extra args are Hydra overrides, e.g. seed=1
+just check                      # ruff format + lint, ty, then the full test suite
+```
+
+`just run` calls `scripts/train.py`, which instantiates the config and hands the
+pieces to `core.fit`. Metrics stream to the terminal and to `.logs/` through the
+CSV logger.
+
+## Guidelines
+
+The conventions for working in this repo live in `.guidelines-ai/`. Each file is
+imported below so its full contents load into context with this file every
+session. Read all of them before writing code.
+
+Environment and tooling — uv, ruff, ty:
+@.guidelines-ai/uv-project.md
+
+Python conventions — naming, typing, docstrings, pure cores, errors, layout:
+@.guidelines-ai/python.md
+
+Modeling code — reproducibility, einops shapes, jaxtyping types:
+@.guidelines-ai/ml-pytorch.md
+
+Testing — what to test, pytest layout, fixtures, hypothesis, tensor asserts:
+@.guidelines-ai/testing.md
+
+Commits and pull requests — Angular convention, the commit gate:
+@.guidelines-ai/git-github.md
+
+Prose style for all docs, comments, and messages:
+@.guidelines-ai/avoid-ai-slop.md

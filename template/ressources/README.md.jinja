@@ -1,0 +1,90 @@
+# ressources
+
+Papers behind the {{ project_slug }} experiments, plus a repeatable way to turn each PDF into
+markdown an agent can read. This file is the workflow; it's written for the agent
+that maintains the library.
+
+Only three things are versioned: `ressources.json` (the catalog),
+`convert_pdf.py` (the conversion script), and this `README.md`. Every per-paper
+folder is derived from them and is rebuilt on demand, so it stays out of git.
+
+## Structure
+
+```
+ressources/
+    .gitignore           # ignores every <slug>/ folder
+    README.md            # this file
+    convert_pdf.py       # slug-driven docling conversion
+    ressources.json      # the catalog
+    <slug>/              # rebuildable, git-ignored
+        _input.pdf       # the paper, from the entry's url (or supplied by hand)
+        _output.md       # docling markdown export
+        images/          # figures docling extracted, referenced by _output.md
+        summary.md       # your summary of _output.md + images/
+```
+
+## The catalog
+
+`ressources.json` is an array of entries. Each has:
+
+- `slug` — unique kebab-case key, and the folder name under `ressources/`.
+- `title` — the paper's title.
+- `url` — direct link to the PDF (e.g. `https://arxiv.org/pdf/2002.05709`).
+- `date` — publication date, ISO `YYYY-MM-DD`.
+- `repo` — code repository, or `null` when there's none.
+
+## Add a resource
+
+1. Add an entry to `ressources.json` with a fresh `slug`.
+2. Run the converter:
+
+   ```bash
+   uv run ressources/convert_pdf.py <slug>
+   ```
+
+   If the host blocks automatic downloads, download the PDF by hand and pass it
+   in — it becomes `_input.pdf` and the rest is identical:
+
+   ```bash
+   uv run ressources/convert_pdf.py <slug> --pdf ~/Downloads/paper.pdf
+   ```
+
+   This writes `_input.pdf`, `_output.md`, and `images/`. Add `--force` to
+   re-download and re-convert an entry that already has outputs.
+3. Read `_output.md` and the figures in `images/`, then write `summary.md`.
+
+## What a summary contains
+
+Write `summary.md` for a future agent deciding whether the paper is worth
+opening in full. Cover:
+
+- the problem and why it matters,
+- the method — the core idea, loss, and architecture in enough detail to place it,
+- the key results and what they show,
+- notable figures, referencing them by their path in `images/`,
+- links to the paper (`url`) and its `repo`.
+
+Keep it concrete and follow `../.guidelines-ai/avoid-ai-slop.md`.
+
+## Rebuild from scratch
+
+The whole point of keeping only the three tracked files: an agent can rebuild
+every folder from them. "Read this README and process every resource in
+`ressources.json`" means
+
+```bash
+uv run ressources/convert_pdf.py --all
+```
+
+to regenerate every `_input.pdf`, `_output.md`, and `images/`, then write each
+`summary.md`. Papers with `--pdf`-only sources (blocked downloads) are the one
+exception — they need the file supplied by hand.
+
+## Commands
+
+```bash
+uv run ressources/convert_pdf.py <slug>              # one paper
+uv run ressources/convert_pdf.py <slug> --pdf <path> # blocked download
+uv run ressources/convert_pdf.py --all               # every paper
+uv run ressources/convert_pdf.py <slug> --force      # redo an existing one
+```

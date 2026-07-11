@@ -1,0 +1,26 @@
+# uv-managed virtual environment
+.venv/
+
+# Tool caches
+.ruff_cache/
+.ty_cache/
+.pytest_cache/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Build artifacts
+*.egg-info/
+build/
+dist/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Hydra run directories
+outputs/
+multirun/
+
+# Metric logs
+.logs/

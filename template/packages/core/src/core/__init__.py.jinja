@@ -1,0 +1,50 @@
+"""Shared contracts and utilities for the {{ project_slug }} experiments.
+
+Batches travel as ``tensordict.TensorDictBase``. `Model` maps a batch of named
+tensors to a batch of named tensors; `Loss` is a metric whose ``update_and_loss``
+also returns the `Scalar` ready for ``.backward()``. `Data` builds the train
+dataloader and named eval dataloaders from datasets, with its loader options in
+`LoaderKwargs`; `TensorDictDataset` serves a batched TensorDict as a map-style
+dataset. `EvalSchedule` says when one eval split's metrics are computed and
+`ScheduleTracker` makes the per-step firing decisions. `CheckpointState` is the
+training snapshot a checkpoint callback hands to a logger. `seed_parameters`
+re-initializes a module's parameters from an explicit generator.
+
+The concrete implementations live in four subpackages: `core.train` (the
+training loop `fit`, its `evaluate` pass, the `EvalSplit` bundle, and the
+`TrainContext` threaded through both), `core.metrics` (the `Metric` contract and
+the shipped metrics), `core.callbacks` (the `Callback` interface and the shipped
+callbacks), and `core.logger` (the logging backends).
+"""
+
+from core import callbacks
+from core import logger
+from core import metrics
+from core import train
+from core._checkpoint import CheckpointState
+from core._contracts import Model
+from core._contracts import Scalar
+from core._data import Data
+from core._data import LoaderKwargs
+from core._data import TensorDictDataset
+from core._initialization import seed_parameters
+from core._loss import Loss
+from core._schedule import EvalSchedule
+from core._schedule import ScheduleTracker
+
+__all__ = [
+    "CheckpointState",
+    "Data",
+    "EvalSchedule",
+    "LoaderKwargs",
+    "Loss",
+    "Model",
+    "Scalar",
+    "ScheduleTracker",
+    "TensorDictDataset",
+    "callbacks",
+    "logger",
+    "metrics",
+    "seed_parameters",
+    "train",
+]

@@ -1,0 +1,417 @@
+% beamerthemefilao.sty -- the filao house Beamer theme for talks.
+%
+% A single, self-contained theme (colour + font + inner + outer), the slide
+% companion to filao.cls. It is built for looks first: a dark, image-forward
+% deck by default, a light editorial skin on request. The paper's data figures
+% keep their colourblind-safe Okabe-Ito palette (loaded here unchanged, so a
+% plot asset renders on a slide exactly as it does in the article); only the
+% slide *chrome* -- title bars, rules, blocks, bullets -- goes for beauty.
+%
+% Usage (in the deck preamble):
+%   \usetheme{filao}          % dark skin  (default)
+%   \usetheme[light]{filao}   % light skin
+%   \usetheme[fira]{filao}    % dark + Fira Sans if the font is installed
+%
+% Build the deck from paper/, pointing tectonic at this folder:
+%   tectonic -Z search-path=styles/filao-beamer talk.tex --outdir _build
+%
+% The knobs worth touching sit right below: the skin colours, the accent, and
+% the font block. Everything downstream reads from those.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemefilao}[2026/07/04 filao house Beamer theme]
+
+% ==========================================================================
+%  OPTIONS
+% ==========================================================================
+% dark (default) / light choose the skin; fira opts into a system Fira Sans.
+\newif\iffilao@dark   \filao@darktrue
+\newif\iffilao@fira   \filao@firafalse
+\DeclareOptionBeamer{dark}{\filao@darktrue}
+\DeclareOptionBeamer{light}{\filao@darkfalse}
+\DeclareOptionBeamer{fira}{\filao@firatrue}
+\ProcessOptionsBeamer
+
+\mode<presentation>
+
+% ==========================================================================
+%  SHARED MATH / PLOTTING STACK
+% ==========================================================================
+% The deck does NOT \input the paper's preamble.tex: that file loads
+% article-only packages (caption, natbib, amsthm) that fight Beamer. Instead we
+% load here the subset the reused assets/ actually need. Beamer already brings
+% tikz, xcolor, and hyperref, so those are not repeated.
+\RequirePackage{mathtools}
+\RequirePackage{amssymb}
+\RequirePackage{bm}
+\RequirePackage{siunitx}
+% separate-uncertainty prints "1.23 +- 0.04"; detect-all makes \num pick up the
+% ambient font, so table/inline numbers are set in the deck's Heros sans (matched
+% to the text) rather than Computer Modern. Figure axis ticks are untouched --
+% the assets render as they do in the article.
+\sisetup{separate-uncertainty=true, detect-all}
+\RequirePackage{booktabs}
+\RequirePackage{multirow}
+\RequirePackage{makecell}
+\RequirePackage{algpseudocodex}          % the algorithmic env for the training asset
+\RequirePackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\RequirePackage{pgfplotstable}
+\RequirePackage{csvsimple}
+
+% Assets reference figures/CSVs by paths relative to paper/, and size to the two
+% house float widths \floatcol/\floatfull. Those aliases live in macros.tex, which
+% the deck \inputs, so they are not redefined here. The graphics path lives in
+% preamble.tex, which the deck skips -- so set it here too.
+\graphicspath{{assets/}}
+
+% ==========================================================================
+%  DATA PALETTE  (reused from preamble.tex, verbatim -- do not restyle)
+% ==========================================================================
+% Okabe-Ito, so a plot on a slide is the same plot as in the paper. Ordered so
+% the highest-contrast hues come first; each series also gets a dash and a
+% marker, so a figure survives grayscale and total colour blindness.
+\definecolor{oiBlue}{HTML}{0072B2}
+\definecolor{oiVermillion}{HTML}{D55E00}
+\definecolor{oiGreen}{HTML}{009E73}
+\definecolor{oiPurple}{HTML}{CC79A7}
+\definecolor{oiOrange}{HTML}{E69F00}
+\definecolor{oiSky}{HTML}{56B4E9}
+\definecolor{oiYellow}{HTML}{F0E442}
+\pgfplotscreateplotcyclelist{paper}{%
+  {oiBlue, solid, mark=*, mark options={fill=oiBlue}},%
+  {oiVermillion, densely dashed, mark=square*, mark options={fill=oiVermillion}},%
+  {oiGreen, densely dashdotted, mark=triangle*, mark options={fill=oiGreen}},%
+  {oiPurple, dashdotted, mark=diamond*, mark options={fill=oiPurple}},%
+  {oiOrange, densely dotted, mark=pentagon*, mark options={fill=oiOrange}},%
+  {oiSky, loosely dashed, mark=x},%
+}
+% On a slide the plot sits on the deck's surface colour, not white. filaosurface
+% is defined below with the skin; the axis background is set to match so a figure
+% blends into the slide instead of floating on a white card.
+\pgfplotsset{
+  cycle list name=paper,
+  every axis plot/.append style={thick},
+  colormap name=viridis,
+}
+
+% ==========================================================================
+%  CHROME PALETTE  (beauty-first; the one place the skin is chosen)
+% ==========================================================================
+\iffilao@dark
+  \definecolor{filaobg}{HTML}{1A1D23}       % deep, faintly blue charcoal
+  \definecolor{filaosurface}{HTML}{22262E}  % a hair lighter: cards, plot backdrops
+  \definecolor{filaofg}{HTML}{EAECEF}        % near-white body text
+  \definecolor{filaomuted}{HTML}{8A93A0}     % captions, footline, secondary
+  \definecolor{filaoaccent}{HTML}{2AA5E0}    % luminous sky (a brightened oiBlue)
+  \definecolor{filaowarm}{HTML}{E6A24B}      % warm amber, for emphasis / alerts
+  \definecolor{filaostandouttext}{HTML}{12151A} % dark ink for text on the accent
+\else
+  \definecolor{filaobg}{HTML}{FCFCFA}        % warm near-white
+  \definecolor{filaosurface}{HTML}{F1F1EC}   % a hair darker: cards, plot backdrops
+  \definecolor{filaofg}{HTML}{22262B}        % soft ink (~85% black, easier on the eye)
+  \definecolor{filaomuted}{HTML}{6B7480}     % captions, footline, secondary
+  \definecolor{filaoaccent}{HTML}{0B4F6C}    % the paper's deep filao blue
+  \definecolor{filaowarm}{HTML}{B5651D}      % warm sienna, for emphasis / alerts
+  \definecolor{filaostandouttext}{HTML}{FCFCFA} % light text on the dark accent
+\fi
+
+% Blend the pgfplots axis backdrop into the slide surface.
+\pgfplotsset{every axis/.append style={
+  axis background/.style={fill=filaosurface},
+  axis line style={filaomuted}, tick label style={filaomuted},
+  label style={filaofg}, legend style={fill=filaosurface, draw=filaomuted, text=filaofg},
+  grid style={filaomuted!30},
+}}
+
+% ==========================================================================
+%  FONTS
+% ==========================================================================
+% Default: TeX Gyre Heros (a clean Helvetica-grade sans) loaded by fontspec
+% straight from its OpenType file. Tectonic runs XeTeX in Unicode (TU) mode, so
+% the 8-bit NFSS packages (tgheros/helvet) don't resolve; loading the .otf by
+% *filename* does, and tectonic fetches the file from its own bundle -- no font
+% install, no system font-database lookup. Math is left as Computer Modern,
+% which reads fine on slides. Pass [fira] for a system Fira Sans instead.
+\RequirePackage{fontspec}
+\iffilao@fira
+  \setsansfont{Fira Sans}[Numbers=OldStyle]  % needs Fira Sans installed
+\else
+  \setsansfont{texgyreheros}[
+    Extension=.otf,
+    UprightFont=*-regular, BoldFont=*-bold,
+    ItalicFont=*-italic, BoldItalicFont=*-bolditalic,
+  ]
+\fi
+% Monospace: Fira Mono, so \texttt (the title email, any code) matches the sans
+% text instead of falling back to Computer Modern typewriter. Loaded by filename
+% from the bundle, like Heros. Fall back to texgyrecursor if unavailable.
+\setmonofont{FiraMono}[
+  Extension=.otf,
+  UprightFont=*-Regular, BoldFont=*-Bold,
+  Scale=MatchLowercase,
+]
+\renewcommand{\familydefault}{\sfdefault}
+
+% Small-caps headings (a Michaillat touch): a helper that switches to letterspaced
+% small caps. Used by the frame-title, section, and title templates below. Real
+% small caps come from the Heros OTF; fontspec letterspaces them for an editorial
+% heading that still reads strong next to \bfseries.
+\newcommand{\filao@smallcaps}{\scshape\addfontfeatures{LetterSpace=3.0}}
+
+% A little more lead than the default: air between lines helps reading (a
+% Michaillat point), applied in moderation so a slide still holds ~10-12 lines.
+\linespread{1.12}
+
+\setbeamerfont{title}{size=\Huge, series=\bfseries}
+\setbeamerfont{subtitle}{size=\large, series=\mdseries}
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{frametitle}{size=\Large, series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\small, series=\mdseries}
+\setbeamerfont{section page}{size=\Huge, series=\bfseries}
+\setbeamerfont{standout}{size=\Huge, series=\bfseries}
+\setbeamerfont{footline}{size=\scriptsize}
+\setbeamerfont{block title}{size=\normalsize, series=\bfseries}
+
+% ==========================================================================
+%  BEAMER COLOUR ELEMENTS
+% ==========================================================================
+\setbeamercolor{background canvas}{bg=filaobg}
+\setbeamercolor{normal text}{fg=filaofg, bg=filaobg}
+\setbeamercolor{structure}{fg=filaoaccent}
+\setbeamercolor{alerted text}{fg=filaowarm}
+\setbeamercolor{example text}{fg=filaoaccent}
+
+\setbeamercolor{title}{fg=filaofg}
+\setbeamercolor{subtitle}{fg=filaomuted}
+\setbeamercolor{author}{fg=filaofg}
+\setbeamercolor{date}{fg=filaomuted}
+\setbeamercolor{institute}{fg=filaomuted}
+
+\setbeamercolor{frametitle}{fg=filaofg, bg=}
+\setbeamercolor{framesubtitle}{fg=filaomuted}
+
+\setbeamercolor{itemize item}{fg=filaoaccent}
+\setbeamercolor{itemize subitem}{fg=filaoaccent}
+\setbeamercolor{itemize subsubitem}{fg=filaoaccent}
+\setbeamercolor{enumerate item}{fg=filaoaccent}
+\setbeamercolor{caption name}{fg=filaomuted}
+\setbeamercolor{caption}{fg=filaomuted}
+
+\setbeamercolor{block title}{fg=filaostandouttext, bg=filaoaccent}
+\setbeamercolor{block body}{fg=filaofg, bg=filaosurface}
+\setbeamercolor{block title alerted}{fg=filaostandouttext, bg=filaowarm}
+\setbeamercolor{block body alerted}{fg=filaofg, bg=filaosurface}
+
+\setbeamercolor{footline}{fg=filaomuted}
+\setbeamercolor{section page}{fg=filaostandouttext, bg=filaoaccent}
+\setbeamercolor{standout}{fg=filaostandouttext, bg=filaoaccent}
+\setbeamercolor{progress bar}{fg=filaoaccent, bg=filaomuted!35}
+
+% ==========================================================================
+%  OUTER THEME  (furniture: progress bar, frame title, footline)
+% ==========================================================================
+\setbeamertemplate{navigation symbols}{}   % no clutter
+\setbeamersize{text margin left=1.4em, text margin right=1.4em}
+
+% A thin progress bar across the very top: the accent portion is the fraction of
+% the deck seen so far. Drawn as two overlapping rules -- the muted full-width
+% track, then the accent portion painted back over its left end. The width is
+% computed with \dimexpr (dimen * int / int); doing the same arithmetic inside a
+% tikz coordinate would read the scaled dimension as a bare number in cm.
+\newlength{\filao@barheight}\setlength{\filao@barheight}{1.6pt}
+\newlength{\filao@progresswd}
+\setbeamertemplate{headline}{%
+  \setlength{\filao@progresswd}{%
+    \dimexpr\paperwidth*\insertframenumber/\inserttotalframenumber\relax}%
+  % Clamp: on the first pass \inserttotalframenumber reads as 1, so the accent
+  % width would exceed \paperwidth and overfill. The rerun sets the real total.
+  \ifdim\filao@progresswd>\paperwidth\setlength{\filao@progresswd}{\paperwidth}\fi
+  \nointerlineskip
+  \leavevmode
+  \rlap{\color{filaomuted!35}\rule{\paperwidth}{\filao@barheight}}%
+  {\color{filaoaccent}\rule{\filao@progresswd}{\filao@barheight}}%
+  \par\nointerlineskip
+}
+
+% Frame title: left-aligned, bold letterspaced small caps, over a short accent
+% rule -- editorial (Michaillat) but still strong.
+\setbeamertemplate{frametitle}{%
+  \vspace{0.9em}%
+  {\usebeamerfont{frametitle}\filao@smallcaps\usebeamercolor[fg]{frametitle}\insertframetitle\par}%
+  \ifx\insertframesubtitle\@empty\else
+    {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle\par}%
+  \fi
+  \vspace{0.25em}%
+  {\color{filaoaccent}\rule{2.4em}{2pt}}%
+  \vspace{0.2em}%
+}
+
+% Footline: short title on the left, frame number (accent) on the right.
+\setbeamertemplate{footline}{%
+  \hbox{%
+    \begin{beamercolorbox}[wd=.7\paperwidth, ht=2.4ex, dp=1.2ex, leftskip=1.4em]{footline}%
+      \usebeamerfont{footline}\insertshorttitle%
+    \end{beamercolorbox}%
+    \begin{beamercolorbox}[wd=.3\paperwidth, ht=2.4ex, dp=1.2ex, rightskip=1.4em]{footline}%
+      \usebeamerfont{footline}\hfill{\color{filaoaccent}\insertframenumber}%
+    \end{beamercolorbox}%
+  }%
+  \vspace{0.4ex}%
+}
+
+% ==========================================================================
+%  INNER THEME  (title page, section page, itemize, blocks)
+% ==========================================================================
+
+% Title page: big title over an accent rule, then author / institute / date. A
+% \titlegraphic, if set, sits below as a strip.
+\setbeamertemplate{title page}{%
+  \vfill
+  \begingroup
+    \raggedright
+    {\usebeamerfont{title}\filao@smallcaps\usebeamercolor[fg]{title}\inserttitle\par}%
+    \ifx\insertsubtitle\@empty\else
+      \vspace{0.4em}{\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+    \fi
+    \vspace{0.7em}{\color{filaoaccent}\rule{0.42\paperwidth}{2.5pt}}\par
+    \vspace{1.0em}{\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor\par}%
+    \ifx\insertinstitute\@empty\else
+      \vspace{0.2em}{\usebeamerfont{institute}\usebeamercolor[fg]{institute}\insertinstitute\par}%
+    \fi
+    \ifx\insertdate\@empty\else
+      \vspace{0.2em}{\usebeamerfont{date}\usebeamercolor[fg]{date}\insertdate\par}%
+    \fi
+  \endgroup
+  \ifx\inserttitlegraphic\@empty\else
+    \vspace{0.9em}{\centering\inserttitlegraphic\par}%
+  \fi
+  \vfill
+}
+
+% Section divider: a full-accent slide reading "01 The Question": the section
+% number zero-padded to two digits (small), then the small-caps title. Shown at
+% every \section via the hook below.
+\newcommand{\filao@secnum}{\ifnum\value{section}<10 0\fi\arabic{section}}
+\setbeamertemplate{section page}{%
+  \begin{beamercolorbox}[wd=\paperwidth, ht=\paperheight]{section page}%
+    \vbox to \paperheight{%
+      \vfil
+      \hbox to \paperwidth{\hfil
+        \begin{minipage}{0.82\paperwidth}%
+          \raggedright
+          \usebeamerfont{section page}\color{filaostandouttext}%
+          {\normalsize\filao@secnum}\hspace{0.6em}{\filao@smallcaps\insertsectionhead}\par
+        \end{minipage}%
+      \hfil}%
+      \vfil
+    }%
+  \end{beamercolorbox}%
+}
+\AtBeginSection[]{%
+  \begin{frame}[plain, noframenumbering]
+    \sectionpage
+  \end{frame}%
+}
+
+% Itemize markers: small accent glyphs, distinct per level, tightened spacing.
+\setbeamertemplate{itemize item}{\small\raise0.2ex\hbox{\color{filaoaccent}$\blacksquare$}}
+\setbeamertemplate{itemize subitem}{\footnotesize\raise0.2ex\hbox{\color{filaoaccent}$\blacktriangleright$}}
+\setbeamertemplate{itemize subsubitem}{\scriptsize\raise0.2ex\hbox{\color{filaoaccent}$\bullet$}}
+\setbeamertemplate{enumerate item}{\color{filaoaccent}\insertenumlabel.}
+\setlength{\leftmargini}{1.4em}
+% Separate list items a touch, for the same breathing room as the line lead.
+\setbeamertemplate{itemize/enumerate body begin}{\setlength{\itemsep}{0.45em plus .1em}}
+
+% Blocks: flat, an accent title bar over a subtle surface body. No shadows,
+% no rounded default beamer chrome.
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% ==========================================================================
+%  STATEMENTS & CAPTIONS
+% ==========================================================================
+
+% A styled home for a formal statement (Michaillat's soft rounded rectangle): a
+% surface-coloured, rounded box with a small-caps accent label, an optional name,
+% and an italic body. theorem/definition are renewed (beamer predefines them);
+% assumption/result are new. Use as \begin{theorem}[name] ... \end{theorem}.
+\setbeamercolor{filao statement}{fg=filaofg, bg=filaosurface}
+\newcommand{\filao@stmtbegin}[2]{%
+  \par\vskip0.4em
+  \begin{beamercolorbox}[sep=0.6em, rounded=true, shadow=false]{filao statement}%
+    {\filao@smallcaps\color{filaoaccent}#1}%
+    \if\relax\detokenize{#2}\relax\else\;{\normalfont\itshape\color{filaomuted}#2}\fi
+    \par\vskip0.35em\itshape\ignorespaces}
+\newcommand{\filao@stmtend}{\end{beamercolorbox}\par\vskip0.4em}
+\RenewDocumentEnvironment{theorem}{O{}}{\filao@stmtbegin{Theorem}{#1}}{\filao@stmtend}
+\RenewDocumentEnvironment{definition}{O{}}{\filao@stmtbegin{Definition}{#1}}{\filao@stmtend}
+\NewDocumentEnvironment{assumption}{O{}}{\filao@stmtbegin{Assumption}{#1}}{\filao@stmtend}
+\NewDocumentEnvironment{result}{O{}}{\filao@stmtbegin{Result}{#1}}{\filao@stmtend}
+
+% A quiet figure/table note: centred, small, muted. Replaces the hand-rolled
+% caption spans in the deck.
+\newcommand{\slidenote}[1]{\par\vspace{0.3em}{\centering\small\color{filaomuted}#1\par}}
+
+% ==========================================================================
+%  HELPER MACROS  (image- and video-forward layouts)
+% ==========================================================================
+
+% Full-bleed image filling the whole frame. The overlay node is placed against
+% the page, not the text block, so it ignores the margins on its own -- no
+% manual margin correction needed. Use inside a [plain] frame:
+%   \begin{frame}[plain]\fullbleed{photo}\end{frame}
+\newcommand{\fullbleed}[1]{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \node[at=(current page.center), inner sep=0pt] {%
+      \includegraphics[width=\paperwidth, height=\paperheight, keepaspectratio]{#1}};%
+  \end{tikzpicture}%
+}
+
+% Two-column image | text split (or any two blocks). Balanced 0.48/0.48 columns.
+\newcommand{\splitframe}[2]{%
+  \begin{columns}[T, onlytextwidth]
+    \begin{column}{0.48\textwidth}#1\end{column}%
+    \begin{column}{0.48\textwidth}#2\end{column}%
+  \end{columns}%
+}
+
+% Big-statement slide: one centred line on the accent background. The punchline.
+\newcommand{\standout}[1]{%
+  \begingroup
+  \setbeamercolor{background canvas}{bg=filaoaccent}%
+  \begin{frame}[plain, noframenumbering]
+    \centering\vfill
+    {\usebeamerfont{standout}\color{filaostandouttext}#1\par}%
+    \vfill
+  \end{frame}%
+  \endgroup
+}
+
+% --- Video (media9) ------------------------------------------------------
+% PDF video plays only in Adobe Acrobat/Reader and pdfpc; other viewers show
+% the poster frame. See styles/filao-beamer/README.md. Both macros want a
+% poster image at the same basename + "-poster" (e.g. clip.mp4 -> clip-poster).
+\RequirePackage{media9}
+% Full-frame autoplaying video. Use inside a [plain] frame.
+\newcommand{\vidfull}[1]{%
+  \includemedia[width=\paperwidth, height=\paperheight, activate=pageopen,
+    addresource=#1, flashvars={source=#1},
+    poster=#1-poster]{}{VPlayer9.swf}%
+}
+% Inline video at a given width, sits in the flow like a figure.
+\newcommand{\vidinline}[2]{%
+  \includemedia[width=#2, activate=pageopen,
+    addresource=#1, flashvars={source=#1},
+    poster=#1-poster]{}{VPlayer9.swf}%
+}
+
+% --- Frame animation (animate) ------------------------------------------
+% \animframes{assets/name/frames/frame}{fps}{first}{last} plays a PNG/PDF
+% sequence exported from packages/. Also Adobe-Reader-only for playback; a still
+% frame shows elsewhere.
+\RequirePackage{animate}
+\newcommand{\animframes}[4]{%
+  \animategraphics[autoplay, loop, width=\linewidth]{#2}{#1}{#3}{#4}%
+}
+
+\mode<all>

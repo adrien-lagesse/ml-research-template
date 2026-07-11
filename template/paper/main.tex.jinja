@@ -1,0 +1,45 @@
+% The paper, on the filao house class. The class lives in styles/filao/, so add
+% that folder to the search path (this tectonic does not read TEXINPUTS; see
+% styles/filao/README.md):
+%
+%   tectonic -Z search-path=styles/filao main.tex --outdir _build
+%
+% filao is a document CLASS that owns layout only; preamble.tex brings the
+% package stack. `final` here drops the first-page notice -- use `preprint` for a
+% draft notice. The float widths need no handling: \floatcol / \floatfull
+% (macros.tex) alias \columnwidth / \textwidth, and filao is single-column, so
+% both take the one text width.
+\documentclass[final]{filao}
+
+\input{preamble}
+\input{macros}
+
+\title{ {{ paper_title }} }
+\runningtitle{On the Width of MLPs}
+\author{ {{ author_name }} \\ \texttt{ {{ author_email }} } }
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  The multilayer perceptron is the simplest deep network, and it still repays
+  study. We review its definition and the universal approximation property,
+  describe minibatch training by backpropagation, and measure how hidden width
+  shapes generalization on a synthetic classification task. Accuracy rises
+  quickly with width and then plateaus: past a few hundred hidden units, extra
+  capacity buys almost nothing. We report the training dynamics, the width
+  sweep, and a small benchmark of depth--width configurations.
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/model}
+\input{sections/training}
+\input{sections/experiments}
+\input{sections/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

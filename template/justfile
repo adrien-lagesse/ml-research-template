@@ -1,0 +1,27 @@
+default:
+    @just --list --unsorted
+
+# List the experiments.
+list:
+    @ls experiments | grep -v '^_'
+
+# Scaffold experiments/<name> from experiments/_template.
+new name:
+    test ! -e experiments/{{ name }}
+    cp -r experiments/_template experiments/{{ name }}
+    perl -pi -e 's/__NAME__/{{ name }}/g' experiments/{{ name }}/goal.md experiments/{{ name }}/config.yaml # not sed -i: BSD and GNU sed disagree on the in-place flag
+    @echo "created experiments/{{ name }} — fill in goal.md and the ??? fields in config.yaml"
+
+# Train; extra args are hydra overrides, e.g. `just run dummy_regression seed=1`.
+run name *overrides:
+    uv run scripts/train.py -cd experiments/{{ name }} -cn config {{ overrides }}
+
+# Formatting, lint, and type checks, then the full test suite.
+check:
+    uv run ruff format --check .
+    uv run ruff check .
+    uv run ty check .
+    uv run --all-packages pytest
+
+paper:
+    cd paper && tectonic -Z search-path=styles/filao main.tex --outdir _build

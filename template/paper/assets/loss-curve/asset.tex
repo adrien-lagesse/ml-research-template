@@ -1,0 +1,28 @@
+% Loss-curve asset: train and validation loss over epochs. The validation curve
+% carries a shaded +-1 std band over seeds, built from val_loss and
+% val_loss_std with the fillbetween library. Series read by colour AND dash, so
+% the figure survives grayscale. Sized to \linewidth for a subfigure.
+\begin{tikzpicture}
+  \begin{axis}[
+    width=\linewidth, height=5cm,
+    xlabel={Epoch}, ylabel={Cross-entropy loss},
+    legend pos=north east, legend cell align=left,
+    grid=major,
+  ]
+    % validation band: upper and lower edges are mean +- std
+    \addplot [name path=vhi, draw=none, forget plot]
+      table [col sep=comma, x=epoch, y expr=\thisrow{val_loss}+\thisrow{val_loss_std}]
+      {results/training/data.csv};
+    \addplot [name path=vlo, draw=none, forget plot]
+      table [col sep=comma, x=epoch, y expr=\thisrow{val_loss}-\thisrow{val_loss_std}]
+      {results/training/data.csv};
+    \addplot [oiBlue!15, forget plot] fill between [of=vhi and vlo];
+
+    \addplot [oiBlue, solid, mark=none]
+      table [col sep=comma, x=epoch, y=val_loss] {results/training/data.csv};
+    \addlegendentry{validation}
+    \addplot [oiVermillion, densely dashed, mark=none]
+      table [col sep=comma, x=epoch, y=train_loss] {results/training/data.csv};
+    \addlegendentry{train}
+  \end{axis}
+\end{tikzpicture}
