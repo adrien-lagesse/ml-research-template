@@ -6,6 +6,7 @@ requires-python = ">=3.14"
 dependencies = [
     "einops>=0.8.2",
     "jaxtyping>=0.3.11",
+    "mlflow>=3.14.0",
     "safetensors>=0.8.0",
     "tensordict>=0.13.0",
     "torch>=2.12.1",
