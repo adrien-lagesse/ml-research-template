@@ -1,5 +1,6 @@
 """Tests for MLflowLogger against a temporary SQLite tracking store."""
 
+from collections.abc import Iterator
 from pathlib import Path
 
 import mlflow
@@ -11,17 +12,21 @@ from core.logger import MLflowLogger
 
 
 @pytest.fixture
-def tracking_uri(tmp_path: Path) -> str:
+def tracking_uri(tmp_path: Path) -> Iterator[str]:
     """A SQLite tracking store with artifacts and an ``exp`` experiment in tmp_path.
 
     MLflow refuses the deprecated file store, so the tests use a SQLite backend
     like the real server. The experiment is created here with an explicit
-    artifact location under ``tmp_path`` so nothing lands in the repo.
+    artifact location under ``tmp_path`` so nothing lands in the repo. The run a
+    test leaves active (one whose ``close`` an assertion pre-empted) is ended on
+    teardown, so it can't fail the next test's ``start_run``.
     """
     uri = f"sqlite:///{tmp_path / 'mlflow.db'}"
     mlflow.set_tracking_uri(uri)
     mlflow.create_experiment("exp", artifact_location=(tmp_path / "artifacts").as_uri())
-    return uri
+    yield uri
+    if mlflow.active_run() is not None:
+        mlflow.end_run()
 
 
 def _sample_state(*, global_step: int = 7) -> CheckpointState:
@@ -42,9 +47,7 @@ def _sample_state(*, global_step: int = 7) -> CheckpointState:
 
 def test_mlflow_logger_records_metric_history(tracking_uri: str) -> None:
     """`log_dict` reaches the run as a prefixed metric keyed by step."""
-    logger = MLflowLogger(
-        experiment_name="exp", run_name="run", tracking_uri=tracking_uri
-    )
+    logger = MLflowLogger(experiment_name="exp", run_name="run")
     run = mlflow.active_run()
     assert run is not None
     run_id = run.info.run_id
@@ -58,9 +61,7 @@ def test_mlflow_logger_records_metric_history(tracking_uri: str) -> None:
 
 def test_mlflow_logger_summary_logs_params_without_artifacts(tracking_uri: str) -> None:
     """With artifacts off, `log_summary` logs scalar params and writes no files."""
-    logger = MLflowLogger(
-        experiment_name="exp", run_name="run", tracking_uri=tracking_uri
-    )
+    logger = MLflowLogger(experiment_name="exp", run_name="run")
     run = mlflow.active_run()
     assert run is not None
     run_id = run.info.run_id
@@ -81,9 +82,7 @@ def test_mlflow_logger_uploads_summary_and_checkpoint_when_enabled(
     tracking_uri: str,
 ) -> None:
     """With artifacts on, the summary document and both checkpoint files upload."""
-    logger = MLflowLogger(
-        experiment_name="exp", run_name="run", tracking_uri=tracking_uri, artifacts=True
-    )
+    logger = MLflowLogger(experiment_name="exp", run_name="run", artifacts=True)
     run = mlflow.active_run()
     assert run is not None
     run_id = run.info.run_id
@@ -105,9 +104,7 @@ def test_mlflow_logger_uploads_summary_and_checkpoint_when_enabled(
 
 def test_mlflow_logger_skips_checkpoint_when_artifacts_off(tracking_uri: str) -> None:
     """With artifacts off, `save_checkpoint` uploads nothing."""
-    logger = MLflowLogger(
-        experiment_name="exp", run_name="run", tracking_uri=tracking_uri
-    )
+    logger = MLflowLogger(experiment_name="exp", run_name="run")
     run = mlflow.active_run()
     assert run is not None
     run_id = run.info.run_id

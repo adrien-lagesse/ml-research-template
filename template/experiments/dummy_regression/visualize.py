@@ -1,7 +1,7 @@
 """Plot the training curves of a logged ``dummy_regression`` run.
 
-Reads ``metrics.csv`` from a run directory under ``$LOG_ROOT`` (default
-``.logs``) ``/dummy_regression/`` — the named run when one is given, otherwise the
+Reads ``metrics.csv`` from a run directory under ``$LOG_ROOT/dummy_regression/``
+(source ``paths.env`` first) — the named run when one is given, otherwise the
 lexicographically newest run that has a ``metrics.csv`` — and writes
 ``curves.png`` beside this script, then prints its path. The figure has one
 panel per metric: train and validation as lines over global steps, the final
@@ -20,8 +20,9 @@ import matplotlib.pyplot as plt
 
 _EXPERIMENT_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _EXPERIMENT_DIR.parents[1]
-# Same root the LocalLogger writes under; relative paths are taken from the repo root.
-_LOG_ROOT = Path(os.environ.get("LOG_ROOT", ".logs"))
+# Same root the LocalLogger writes under, from paths.env; relative paths are taken
+# from the repo root. Source paths.env before running so LOG_ROOT is set.
+_LOG_ROOT = Path(os.environ["LOG_ROOT"])
 _LOGS_DIR = (
     _LOG_ROOT if _LOG_ROOT.is_absolute() else _REPO_ROOT / _LOG_ROOT
 ) / _EXPERIMENT_DIR.name

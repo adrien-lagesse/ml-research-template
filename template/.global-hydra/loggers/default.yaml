@@ -6,10 +6,9 @@
 - _target_: core.logger.LocalLogger
   experiment_name: ${experiment_name}
   run_name: ${run_name}
-  root: ${oc.env:LOG_ROOT,.logs}
+  root: ${oc.env:LOG_ROOT}
   checkpointing: true # LocalLogger owns every on-disk file: metrics, summaries, checkpoints
-- _target_: core.logger.MLflowLogger # metrics + params dashboard; artifacts optional
+- _target_: core.logger.MLflowLogger # metrics + params dashboard; MLFLOW_TRACKING_URI (paths.env) picks the store
   experiment_name: ${experiment_name}
   run_name: ${run_name}
-  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,http://127.0.0.1:5000}
-  artifacts: ${oc.decode:${oc.env:MLFLOW_ARTIFACTS,'false'}}
+  artifacts: false # flip to upload checkpoints and summaries as run artifacts too

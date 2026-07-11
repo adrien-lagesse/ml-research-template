@@ -4,6 +4,7 @@ from collections.abc import Mapping
 import logging
 
 from core.logger._logger import Logger
+from core.logger._logger import _scalar_entries
 
 _terminal_log = logging.getLogger(__name__)
 
@@ -22,10 +23,6 @@ class TerminalLogger(Logger):
         persisting backends; the terminal shows only the flat scalars, so the
         line stays readable regardless of which summary it is.
         """
-        scalars = {
-            key: value
-            for key, value in summary.items()
-            if isinstance(value, (int, float, str))
-        }
+        scalars = _scalar_entries(summary)
         rendered = " ".join(f"{key}={value}" for key, value in scalars.items())
         _terminal_log.info("summary %s: %s", name, rendered)

@@ -8,6 +8,21 @@ from core._checkpoint import CheckpointState
 from core._contracts import Scalar
 
 
+def _scalar_entries(summary: Mapping[str, object]) -> dict[str, int | float | str]:
+    """Keep a summary's flat scalar entries and drop its nested ones.
+
+    A summary mixes flat scalars (a seed, a device, a parameter count) with
+    nested breakdowns (per-module, per-dtype). Backends that store a flat table,
+    the terminal line and MLflow's params, take the scalars and skip the rest. A
+    ``bool`` counts as a scalar: it is an ``int`` subclass and passes through.
+    """
+    return {
+        key: value
+        for key, value in summary.items()
+        if isinstance(value, (int, float, str))
+    }
+
+
 class Logger(ABC):
     """Records named scalar metrics against a global step.
 
