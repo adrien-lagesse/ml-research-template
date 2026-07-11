@@ -86,7 +86,7 @@ class ModelSummary(Callback):
         """Set the document name the summary is stored under.
 
         Args:
-            name: Name passed to ``log_summary``; a ``CSVLogger`` writes it as
+            name: Name passed to ``log_summary``; a ``LocalLogger`` writes it as
                 ``<name>.json`` under the run directory.
         """
         self._name = name

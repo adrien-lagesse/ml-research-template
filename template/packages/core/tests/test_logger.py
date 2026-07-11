@@ -1,4 +1,4 @@
-"""Tests for the Logger interface, CSVLogger, TerminalLogger, and LoggerCollection."""
+"""Tests for the Logger interface, LocalLogger, TerminalLogger, and LoggerCollection."""
 
 import csv
 from datetime import datetime
@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from core.logger import CSVLogger
+from core.logger import LocalLogger
 from core.logger import Logger
 from core.logger import LoggerCollection
 from core.logger import TerminalLogger
@@ -54,16 +54,16 @@ def test_log_dict_without_prefix_keeps_keys() -> None:
     assert list(recorder.calls[0][0]) == ["loss"]
 
 
-def test_csv_logger_creates_run_directory(tmp_path: Path) -> None:
+def test_local_logger_creates_run_directory(tmp_path: Path) -> None:
     """The metrics file sits under `<root>/<experiment>/<stamp>-<run>/`."""
-    logger = CSVLogger(experiment_name="exp", run_name="baseline", root=tmp_path)
+    logger = LocalLogger(experiment_name="exp", run_name="baseline", root=tmp_path)
     assert logger.run_dir.parent == tmp_path / "exp"
     assert logger.run_dir.name.endswith("-baseline")
     logger.log_dict({"loss": torch.tensor(1.0)}, step=1)
     assert (logger.run_dir / "metrics.csv").exists()
 
 
-def test_csv_logger_suffixes_colliding_run_directories(
+def test_local_logger_suffixes_colliding_run_directories(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """Runs starting in the same second get distinct `-2`, `-3`, … directories."""
@@ -73,9 +73,9 @@ def test_csv_logger_suffixes_colliding_run_directories(
         def now() -> datetime:
             return datetime(2026, 1, 1, 12, 0, 0)
 
-    monkeypatch.setattr("core.logger._csv_logger.datetime", _FrozenDatetime)
+    monkeypatch.setattr("core.logger._local_logger.datetime", _FrozenDatetime)
     loggers = [
-        CSVLogger(experiment_name="exp", run_name="run", root=tmp_path)
+        LocalLogger(experiment_name="exp", run_name="run", root=tmp_path)
         for _ in range(3)
     ]
     names = [logger.run_dir.name for logger in loggers]
@@ -92,9 +92,9 @@ def _read_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(file))
 
 
-def test_csv_logger_widens_header_for_new_keys(tmp_path: Path) -> None:
+def test_local_logger_widens_header_for_new_keys(tmp_path: Path) -> None:
     """Rows with disjoint keys share one header, with empty cells elsewhere."""
-    logger = CSVLogger(experiment_name="exp", run_name="run", root=tmp_path)
+    logger = LocalLogger(experiment_name="exp", run_name="run", root=tmp_path)
     logger.log_dict({"loss": torch.tensor(2.0)}, step=1, prefix="train")
     logger.log_dict({"mae": torch.tensor(0.5)}, step=2, prefix="validation")
     rows = _read_rows(logger.run_dir / "metrics.csv")
@@ -104,9 +104,9 @@ def test_csv_logger_widens_header_for_new_keys(tmp_path: Path) -> None:
     ]
 
 
-def test_csv_logger_appends_rows_with_known_keys(tmp_path: Path) -> None:
+def test_local_logger_appends_rows_with_known_keys(tmp_path: Path) -> None:
     """Repeated keys accumulate as rows without losing earlier ones."""
-    logger = CSVLogger(experiment_name="exp", run_name="run", root=tmp_path)
+    logger = LocalLogger(experiment_name="exp", run_name="run", root=tmp_path)
     for step in (1, 2, 3):
         logger.log_dict({"loss": torch.tensor(float(step))}, step=step)
     rows = _read_rows(logger.run_dir / "metrics.csv")

@@ -73,7 +73,7 @@ class Logger(ABC):
         parameter counts, a config dump, environment facts. ``summary`` is a
         JSON-serializable mapping whose values are scalars or nested mappings,
         the shape every backend can store in its idiomatic metadata slot. A
-        ``CSVLogger`` writes ``<name>.json`` under its run directory; a future
+        ``LocalLogger`` writes ``<name>.json`` under its run directory; a future
         ``MLflowLogger`` would call ``mlflow.log_dict(dict(summary), f"{name}.json")``
         (optionally flattening the scalar top level into ``mlflow.log_params`` for
         the searchable table); a future ``WandbLogger`` would set

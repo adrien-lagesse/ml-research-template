@@ -11,7 +11,7 @@ from core._checkpoint import save_checkpoint_files
 from core.logger._logger import Logger
 
 
-class CSVLogger(Logger):
+class LocalLogger(Logger):
     """Logger that writes a wide ``metrics.csv`` under a per-run directory.
 
     The file lives at ``<root>/<experiment_name>/<timestamp>-<run_name>/metrics.csv``;

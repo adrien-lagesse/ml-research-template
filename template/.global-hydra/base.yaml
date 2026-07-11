@@ -1,6 +1,6 @@
 # @package _global_
 # Stop hydra from writing to disk: no run/sweep output dirs, no .hydra config
-# dump, no <job>.log file. Job logs go to stdout only; the CSVLogger under
+# dump, no <job>.log file. Job logs go to stdout only; the LocalLogger under
 # .logs/ is the run's record.
 defaults:
   - override /hydra/job_logging: stdout

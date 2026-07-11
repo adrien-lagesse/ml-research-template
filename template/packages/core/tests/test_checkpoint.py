@@ -13,7 +13,7 @@ from core import Loss
 from core import Model
 from core import Scalar
 from core.callbacks import Checkpoint
-from core.logger import CSVLogger
+from core.logger import LocalLogger
 from core.logger import Logger
 from core.logger import LoggerCollection
 from core.metrics import RunningMean
@@ -201,9 +201,9 @@ def test_invalid_configuration_raises(kwargs: dict[str, object], match: str) -> 
         Checkpoint(**kwargs)  # ty: ignore[invalid-argument-type]
 
 
-def test_csv_logger_writes_both_checkpoint_files(tmp_path: pathlib.Path) -> None:
-    """An enabled CSVLogger writes the weights and the state sidecar."""
-    logger = CSVLogger(
+def test_local_logger_writes_both_checkpoint_files(tmp_path: pathlib.Path) -> None:
+    """An enabled LocalLogger writes the weights and the state sidecar."""
+    logger = LocalLogger(
         experiment_name="exp", run_name="run", root=tmp_path, checkpointing=True
     )
     logger.save_checkpoint(_sample_state(global_step=7, scale=1.5), name="best")
@@ -216,9 +216,9 @@ def test_csv_logger_writes_both_checkpoint_files(tmp_path: pathlib.Path) -> None
     assert sidecar["global_step"] == 7
 
 
-def test_csv_logger_skips_checkpoint_when_disabled(tmp_path: pathlib.Path) -> None:
-    """A CSVLogger with checkpointing off writes nothing."""
-    logger = CSVLogger(
+def test_local_logger_skips_checkpoint_when_disabled(tmp_path: pathlib.Path) -> None:
+    """A LocalLogger with checkpointing off writes nothing."""
+    logger = LocalLogger(
         experiment_name="exp", run_name="run", root=tmp_path, checkpointing=False
     )
     logger.save_checkpoint(_sample_state(), name="best")
@@ -229,10 +229,10 @@ def test_logger_collection_saves_to_enabled_children_only(
     tmp_path: pathlib.Path,
 ) -> None:
     """A collection offers the checkpoint to every child; only enabled ones write."""
-    enabled = CSVLogger(
+    enabled = LocalLogger(
         experiment_name="exp", run_name="on", root=tmp_path, checkpointing=True
     )
-    disabled = CSVLogger(
+    disabled = LocalLogger(
         experiment_name="exp", run_name="off", root=tmp_path, checkpointing=False
     )
     LoggerCollection([enabled, disabled]).save_checkpoint(_sample_state(), name="last")

@@ -8,7 +8,7 @@ class ConfigSummary(Callback):
     """Records the run's fully resolved config once, at the start of training.
 
     On ``on_train_start`` it hands ``TrainContext._resolved_config`` to the
-    logger under ``name``, so a ``CSVLogger`` writes it as ``<name>.json`` and a
+    logger under ``name``, so a ``LocalLogger`` writes it as ``<name>.json`` and a
     terminal logger prints its top-level scalar settings. It persists the config
     wholesale as run provenance, the one sanctioned use of that private field: it
     stores the config, never reads its values.
@@ -18,7 +18,7 @@ class ConfigSummary(Callback):
         """Set the document name the config is stored under.
 
         Args:
-            name: Name passed to ``log_summary``; a ``CSVLogger`` writes it as
+            name: Name passed to ``log_summary``; a ``LocalLogger`` writes it as
                 ``<name>.json`` under the run directory.
         """
         self._name = name

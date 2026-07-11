@@ -14,7 +14,7 @@ from core import TensorDictDataset
 from core.callbacks import ConfigSummary
 from core.callbacks import ModelSummary
 from core.callbacks import model_summary
-from core.logger import CSVLogger
+from core.logger import LocalLogger
 from core.logger import Logger
 from core.logger import LoggerCollection
 from core.metrics import RunningMean
@@ -177,9 +177,9 @@ def test_config_summary_logs_the_resolved_config_at_train_start() -> None:
     assert recorder.summaries == [("config", {"seed": 0, "model": {"width": 32}})]
 
 
-def test_csv_logger_writes_summary_json(tmp_path: pathlib.Path) -> None:
-    """CSVLogger writes the summary as pretty-printed JSON under its run dir."""
-    logger = CSVLogger(experiment_name="exp", run_name="run", root=tmp_path)
+def test_local_logger_writes_summary_json(tmp_path: pathlib.Path) -> None:
+    """LocalLogger writes the summary as pretty-printed JSON under its run dir."""
+    logger = LocalLogger(experiment_name="exp", run_name="run", root=tmp_path)
     logger.log_summary(
         {"total_parameters": 12, "dtypes": {"torch.float32": 12}}, name="model"
     )
@@ -193,8 +193,8 @@ def test_csv_logger_writes_summary_json(tmp_path: pathlib.Path) -> None:
 
 def test_logger_collection_fans_summary_out(tmp_path: pathlib.Path) -> None:
     """A collection offers the summary to every child logger."""
-    first = CSVLogger(experiment_name="exp", run_name="a", root=tmp_path)
-    second = CSVLogger(experiment_name="exp", run_name="b", root=tmp_path)
+    first = LocalLogger(experiment_name="exp", run_name="a", root=tmp_path)
+    second = LocalLogger(experiment_name="exp", run_name="b", root=tmp_path)
     LoggerCollection([first, second]).log_summary({"total_parameters": 3}, name="model")
     assert (first.run_dir / "model.json").is_file()
     assert (second.run_dir / "model.json").is_file()
