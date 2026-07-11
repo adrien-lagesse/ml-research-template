@@ -13,8 +13,28 @@ new name:
     @echo "created experiments/{{ name }} — fill in goal.md and the ??? fields in config.yaml"
 
 # Train; extra args are hydra overrides, e.g. `just run dummy_regression seed=1`.
+# Sources paths.env so the configs' ${oc.env:...} resolve to the project paths.
 run name *overrides:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source paths.env
+    [ -f paths.local.env ] && source paths.local.env
     uv run scripts/train.py -cd experiments/{{ name }} -cn config {{ overrides }}
+
+# Launch the local MLflow tracking server (UI + artifact store) at :5000.
+# Runs on Python 3.13 via uvx: mlflow 3.14's server imports `Traversable` from
+# `importlib.abc`, which Python 3.14 removed, so `uv run mlflow server` crashes.
+# The server talks to the 3.14 client over HTTP, so its interpreter is independent.
+# Storage locations come from paths.env (see that file); paths.local.env overrides.
+mlflow:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    source paths.env
+    [ -f paths.local.env ] && source paths.local.env
+    uvx --python 3.13 --from mlflow mlflow server \
+      --backend-store-uri "$MLFLOW_BACKEND_STORE_URI" \
+      --artifacts-destination "$MLFLOW_ARTIFACTS_DESTINATION" \
+      --host 127.0.0.1 --port 5000
 
 # Formatting, lint, and type checks, then the full test suite.
 check:

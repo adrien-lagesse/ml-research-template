@@ -1,0 +1,15 @@
+# @package loggers
+# The loggers every experiment shares. Defined once here and pulled in with
+# `- /loggers: default`; experiment_name and run_name interpolate the run's
+# top-level names, so an experiment names its run without retyping them.
+- _target_: core.logger.TerminalLogger
+- _target_: core.logger.LocalLogger
+  experiment_name: ${experiment_name}
+  run_name: ${run_name}
+  root: ${oc.env:LOG_ROOT,.logs}
+  checkpointing: true # LocalLogger owns every on-disk file: metrics, summaries, checkpoints
+- _target_: core.logger.MLflowLogger # metrics + params dashboard; artifacts optional
+  experiment_name: ${experiment_name}
+  run_name: ${run_name}
+  tracking_uri: ${oc.env:MLFLOW_TRACKING_URI,http://127.0.0.1:5000}
+  artifacts: ${oc.decode:${oc.env:MLFLOW_ARTIFACTS,'false'}}

@@ -3,6 +3,8 @@ defaults:
   - /base
   - /optimizer: adamw
   - /scheduler: cosine
+  - /loggers: default
+  - /callbacks: default
   - _self_
 
 experiment_name: __NAME__
@@ -13,6 +15,7 @@ device: cpu
 total_steps: 10000 # optimizer steps; the run length and the cosine T_max
 batch_size: 64
 log_every_steps: 50 # train-loss logging cadence, in global steps
+checkpoint_every_steps: 1000 # resume-checkpoint cadence, in global steps
 
 evals:
   validation:
@@ -33,19 +36,3 @@ loss:
 metrics:
   _target_: core.metrics.MetricCollection
   metrics: []
-
-loggers:
-  - _target_: core.logger.TerminalLogger
-  - _target_: core.logger.CSVLogger
-    experiment_name: ${experiment_name}
-    run_name: ${run_name}
-    checkpointing: true
-
-callbacks:
-  - _target_: core.callbacks.ModelSummary # parameter counts, written at train start
-  - _target_: core.callbacks.ConfigSummary # resolved config, written at train start
-  - _target_: core.callbacks.LRMonitor
-    every_steps: ${log_every_steps}
-  - _target_: core.callbacks.Checkpoint # latest state, for resuming a crashed run
-    every_steps: 1000
-    name: last

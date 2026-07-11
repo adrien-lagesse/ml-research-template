@@ -1,7 +1,7 @@
 """Plot the training curves of a logged ``dummy_regression`` run.
 
-Reads ``metrics.csv`` from a run directory under ``.logs/dummy_regression/``
-at the repo root — the named run when one is given, otherwise the
+Reads ``metrics.csv`` from a run directory under ``$LOG_ROOT`` (default
+``.logs``) ``/dummy_regression/`` — the named run when one is given, otherwise the
 lexicographically newest run that has a ``metrics.csv`` — and writes
 ``curves.png`` beside this script, then prints its path. The figure has one
 panel per metric: train and validation as lines over global steps, the final
@@ -13,12 +13,18 @@ named ``<split>/<metric>`` with a shared ``step`` column. Entry point:
 
 import argparse
 import csv
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 
 _EXPERIMENT_DIR = Path(__file__).resolve().parent
-_LOGS_DIR = _EXPERIMENT_DIR.parents[1] / ".logs" / _EXPERIMENT_DIR.name
+_REPO_ROOT = _EXPERIMENT_DIR.parents[1]
+# Same root the LocalLogger writes under; relative paths are taken from the repo root.
+_LOG_ROOT = Path(os.environ.get("LOG_ROOT", ".logs"))
+_LOGS_DIR = (
+    _LOG_ROOT if _LOG_ROOT.is_absolute() else _REPO_ROOT / _LOG_ROOT
+) / _EXPERIMENT_DIR.name
 
 # Categorical palette slots 1-3, in their CVD-safe order; grays are text inks.
 _SPLIT_COLORS = {"train": "#2a78d6", "validation": "#1baf7a", "test": "#eda100"}

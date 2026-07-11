@@ -6,6 +6,7 @@
     "**/.ty_cache": true,
     "**/.ipynb_checkpoints": true,
     "**/*.egg-info": true,
-    ".venv": true
+    ".venv": true,
+    ".mlflow.db": true
   }
 }

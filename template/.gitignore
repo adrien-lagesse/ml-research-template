@@ -24,3 +24,10 @@ multirun/
 
 # Metric logs
 .logs/
+
+# MLflow local server state
+.mlflow.db
+.mlartifacts/
+
+# Per-machine path overrides (paths.env holds the committed defaults)
+paths.local.env

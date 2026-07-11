@@ -1,0 +1,16 @@
+# @package callbacks
+# The callbacks every experiment shares. Defined once here and pulled in with
+# `- /callbacks: default`; log_every_steps and checkpoint_every_steps interpolate
+# the run's top-level cadences, and the "best" checkpoint tracks validation/loss,
+# so an experiment needs a validation eval reporting that metric.
+- _target_: core.callbacks.ModelSummary # parameter counts, written at train start
+- _target_: core.callbacks.ConfigSummary # resolved config, written at train start
+- _target_: core.callbacks.LRMonitor
+  every_steps: ${log_every_steps}
+- _target_: core.callbacks.Checkpoint # best model, saved when val loss improves
+  monitor: validation/loss
+  mode: min
+  name: best
+- _target_: core.callbacks.Checkpoint # latest state, for resuming a crashed run
+  every_steps: ${checkpoint_every_steps}
+  name: last
