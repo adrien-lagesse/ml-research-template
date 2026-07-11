@@ -15,9 +15,8 @@ were made earlier.
 uvx copier copy gh:adrien-lagesse/ml-research-template path/to/new-project
 ```
 
-copier asks five questions — `project_slug`, `project_description`,
-`author_name`, `author_email`, `paper_title` — and writes a project with those
-filled in. Then:
+copier asks two questions — `project_title` and `project_description` — and
+writes a project with those filled in. Then:
 
 ```bash
 cd path/to/new-project
@@ -53,12 +52,11 @@ git tag v0.2.0 && git push --tags
 
 ## What is templated
 
-Only files named `*.jinja` are rendered (the suffix is stripped on output);
-everything else is copied byte-for-byte. That keeps Jinja away from the
-justfile's own `{{name}}`, Hydra's `${...}`, and the `__NAME__` placeholder in
-`experiments/_template/`. The rendered files are the project's `pyproject.toml`,
-`README.md`, `CLAUDE.md`, `ruff.toml`, the two package/script module docstrings,
-`ressources/`'s README and converter, and the paper's `main.tex` / `talk.tex`
-title and author. The LaTeX house style keeps its fixed name, `filao`.
+Only three files are rendered: `pyproject.toml`, `README.md`, and `CLAUDE.md`.
+They are named `*.jinja`; the suffix is stripped on output. Every other file is
+copied byte-for-byte, so the `core` package, the example package, the paper, the
+`ressources/` workflow, and all tooling config land unchanged. `project_title`
+fills the pyproject name and the two Markdown headings; `project_description`
+fills the pyproject description and the opening line of each README.
 
 The project skeleton lives under `template/`; `copier.yml` holds the questions.

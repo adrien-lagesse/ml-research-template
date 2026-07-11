@@ -241,7 +241,7 @@ mypkg/
 
 ```python
 # mypkg/__init__.py: facade only, no logic
-"""Kernel models for the experiments."""
+"""Kernel models for the SSL experiments."""
 
 from mypkg._model import KernelRidge, TrainResult
 from mypkg._kernels import rbf, linear

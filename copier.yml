@@ -5,42 +5,18 @@
 _subdirectory: template
 
 # Opt-in templating: only files whose name ends in ".jinja" are rendered (the
-# suffix is stripped on output). Everything else is copied byte-for-byte. This
-# keeps Jinja away from the justfile's own {{name}}, Hydra's ${...}, and the
-# __NAME__ placeholder in experiments/_template/.
+# suffix is stripped on output). Everything else is copied byte-for-byte. Only
+# pyproject.toml, README.md, and CLAUDE.md are templated.
 _templates_suffix: ".jinja"
 
 _answers_file: .copier-answers.yml
 
-# Variables stay {{ }}, but move Jinja's block/comment tags off {% and {# so they
-# don't collide with LaTeX (e.g. `\splitframe{%` in paper/talk.tex). The template
-# uses no block/comment tags, so these delimiters are never written — only moved
-# out of the way.
-_envops:
-  block_start_string: "<%"
-  block_end_string: "%>"
-  comment_start_string: "<#"
-  comment_end_string: "#>"
-
-project_slug:
+project_title:
   type: str
-  help: "Project name (pyproject name, README/CLAUDE.md title, docstrings). Use kebab-case, e.g. my-research."
+  help: "Project name. Used as the pyproject name and the README/CLAUDE.md heading. Use kebab-case, e.g. my-research."
   placeholder: "my-research"
 
 project_description:
   type: str
-  help: "One-sentence description (pyproject description + the opening line of README.md and CLAUDE.md)."
+  help: "One-sentence description. Used as the pyproject description and the opening line of README.md and CLAUDE.md."
   placeholder: "Code for <what the project does>."
-
-author_name:
-  type: str
-  help: "Author name (pyproject authors + the paper author)."
-
-author_email:
-  type: str
-  help: "Author email."
-
-paper_title:
-  type: str
-  help: "Title of the example paper under paper/ (edit or delete the paper later)."
-  default: "On the Width of Multilayer Perceptrons"

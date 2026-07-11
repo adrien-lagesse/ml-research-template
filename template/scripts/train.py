@@ -1,4 +1,4 @@
-"""Hydra glue around ``core.fit`` for the {{ project_slug }} experiments.
+"""Hydra glue around ``core.fit`` for the SSL experiments.
 
 Instantiates the ``Data``, ``Model``, ``Loss``, optimizer, scheduler, and
 metrics named in the config, assembles one ``core.EvalSplit`` per eval

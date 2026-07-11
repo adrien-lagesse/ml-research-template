@@ -1,4 +1,4 @@
-"""Shared contracts and utilities for the {{ project_slug }} experiments.
+"""Shared contracts and utilities for the SSL experiments.
 
 Batches travel as ``tensordict.TensorDictBase``. `Model` maps a batch of named
 tensors to a batch of named tensors; `Loss` is a metric whose ``update_and_loss``

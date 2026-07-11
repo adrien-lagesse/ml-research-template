@@ -1,6 +1,6 @@
 # ressources
 
-Papers behind the {{ project_slug }} experiments, plus a repeatable way to turn each PDF into
+Papers behind the SSL experiments, plus a repeatable way to turn each PDF into
 markdown an agent can read. This file is the workflow; it's written for the agent
 that maintains the library.
 

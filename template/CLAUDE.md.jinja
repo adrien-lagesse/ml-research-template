@@ -1,4 +1,4 @@
-# {{ project_slug }}
+# {{ project_title }}
 
 {{ project_description }}
 
@@ -8,14 +8,14 @@ correctness-by-construction, then reproducibility, then brevity.
 ## Folder structure
 
 ```
-{{ project_slug }}/
+{{ project_title }}/
     .github/           # CI workflow and the pull-request template
     .global-hydra/     # shared Hydra config groups: base, optimizer, scheduler
     .guidelines-ai/    # the conventions below — read these first
     .vscode/           # editor settings (ruff + ty wiring)
     experiments/       # one dir per experiment: goal.md + a Hydra config.yaml
         _template/     # scaffold that `just new <name>` copies
-    packages/          # uv workspace members; the actual package code lives here
+    packages/          # uv workspace members; the actual SSL code lives here
         core/          # the scaffold: data/model/loss contracts, training loop,
                        #   metrics, callbacks, loggers
         dummy-regression/  # a synthetic regression task wiring core end to end

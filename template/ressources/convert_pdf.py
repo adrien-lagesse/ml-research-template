@@ -109,7 +109,7 @@ def download_pdf(url: str, dest: Path) -> None:
     """
     # A default user agent so hosts that reject urllib's still serve the file.
     request = urllib.request.Request(
-        url, headers={"User-Agent": "{{ project_slug }}/convert_pdf"}
+        url, headers={"User-Agent": "filao-ssl/convert_pdf"}
     )
     with urllib.request.urlopen(request) as response:
         dest.write_bytes(response.read())

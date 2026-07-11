@@ -1,4 +1,4 @@
-# {{ project_slug }}
+# {{ project_title }}
 
 {{ project_description }}
 
@@ -8,13 +8,13 @@ correctness-by-construction, then reproducibility, then brevity.
 ## Layout
 
 ```
-{{ project_slug }}/
+{{ project_title }}/
     .guidelines-ai/      # the conventions — read these before writing code
     .github/             # CI workflow + pull-request template
     .global-hydra/       # shared Hydra config groups: base, optimizer, scheduler
     .vscode/             # editor settings (ruff + ty wiring)
     experiments/         # one dir per experiment: goal.md + a Hydra config.yaml
-    packages/            # uv workspace members; the package code lives here
+    packages/            # uv workspace members; the SSL code lives here
         core/            # the scaffold: contracts, training loop, metrics,
                          #   callbacks, loggers
         dummy-regression/# a synthetic regression task wiring core end to end

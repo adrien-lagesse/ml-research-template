@@ -1,4 +1,4 @@
-% filao.cls -- the filao house style for papers.
+% filao.cls -- the house style for filao-ssl papers.
 %
 % A thin, self-contained layer over `article`. It owns LAYOUT ONLY: page
 % geometry, section and title styling, a running header, and an optional
@@ -13,7 +13,7 @@
 %   final                no notice (camera-ready / submitted elsewhere).
 % Any other option is passed through to `article`.
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{filao}[2026/07/04 filao house style]
+\ProvidesClass{filao}[2026/07/04 filao-ssl house style]
 
 % --- options -------------------------------------------------------------
 \newif\iffilao@preprint \filao@preprinttrue
